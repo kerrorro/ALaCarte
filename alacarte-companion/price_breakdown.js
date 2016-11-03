@@ -1,0 +1,1 @@
+let hugeLabelStyle = new Style({    color: 'black', font: 'bold 125px', horizontal: 'center', vertical: 'middle', });export var priceScreen = Container.template($ => ({    left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: $.fillColor }),    contents: [      Label($, { left: 0, right: 0, style: hugeLabelStyle, string: $.transitionNumber, }),   ]}));
