@@ -1,0 +1,11 @@
+{
+    "title":"alacarte-device",
+    "description":"This template can be used to create a basic KinomaJS application with a device and simulator BLL.",
+    "id":"alacarte-device.project.kinoma.marvell.com",
+    "tags":[
+        "emptySample"
+    ],
+    "Create":{
+        "main":"main"
+    }
+}
