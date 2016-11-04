@@ -6,6 +6,7 @@ import {
 import {
     SystemKeyboard
 } from 'keyboard';
+
 var hllStyle = new Style({ font:"20px Chalkduster", color:"black", horizontal:"center", vertical:"top" });
 let headerSkin = new Skin({fill: "#3DAFB8"})
 let header = new Container({
@@ -58,11 +59,7 @@ var input;
 let EnterButton = Container.template($ => ({ skin: new Skin({fill: "blue"}),
 	height: 100, width: 200, active: true,
 	behavior: Behavior({
-		onCreate(container){
-			trace("button created\n");
-		},
 		onTouchEnded(container){
-			trace("onTouchEnded\n");
 			container.container.container.map.distribute("drawLocation", input);
 		}
 	})	
@@ -107,19 +104,25 @@ let Map = Container.template($ => ({
 		onCreate(container){
 		},
 		drawLocation(container, input){
-			var top = locationDict[input].row * 10;
-			switch(locationDict[input].offset){
-				case "right":
-					var left = 25 + locationDict[input].col * 10;	
-					break;
-				case "left":
-					var left = 15 + locationDict[input].col * 10;
-					break;
-				default:
-					var left = 20 + locationDict[input].col * 10;
+			try{
+				var top = locationDict[input].row * 10;
+				switch(locationDict[input].offset){
+					case "right":
+						var left = 25 + locationDict[input].col * 10;	
+						break;
+					case "left":
+						var left = 15 + locationDict[input].col * 10;
+						break;
+					default:
+						var left = 20 + locationDict[input].col * 10;
+				}
+				trace("TOP: " + top + "    LEFT: " + left + "\n");
+				container.add(new LocationCircle({top: top, left: left}));
+			} catch (err){
+				trace("ERROR: " + err + "\n");
+				if(err.name == "TypeError"){ trace("We don't sell " + input + "\n");}
 			}
-			trace("TOP: " + top + "    LEFT: " + left + "\n");
-			container.add(new LocationCircle({top: top, left: left}));
+			
 		}
 	})
 }));
@@ -129,7 +132,6 @@ let InputLine = Line.template($ => ({
 	contents: [new MyField({name:""}), new EnterButton]
 }))
 
-export var itemSearchScreen = Column.template($ => ({    name: "itemSearchScreen", left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }),    contents: [
-   	  header,      //Label($, { left: 0, right: 0, style: hugeLabelStyle, string: $.transitionNumber, }),
+export var itemSearchScreen = Column.template($ => ({    name: "itemSearchScreen", left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }),    contents: [      //Label($, { left: 0, right: 0, style: hugeLabelStyle, string: $.transitionNumber, }),
       new Map,
       new InputLine   ],}));
