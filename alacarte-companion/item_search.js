@@ -3,9 +3,8 @@ import {
     FieldLabelBehavior
 } from 'field';
 
-import {
-    SystemKeyboard
-} from 'keyboard';
+import KEYBOARD from './keyboard';
+
 
 var hllStyle = new Style({ font:"20px Chalkduster", color:"black", horizontal:"center", vertical:"top" });
 let headerSkin = new Skin({fill: "#3DAFB8"})
