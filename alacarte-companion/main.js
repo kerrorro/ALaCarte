@@ -1,4 +1,9 @@
-import {    CrossFade,    Push,    Flip,    TimeTravel} from 'transition';
+import {
+    CrossFade,
+    Push,
+    Flip,
+    TimeTravel
+} from 'transition';
 import { Header, Footer } from "navigation";
 import { priceScreen } from "price_breakdown";
 import { calorieScreen } from "calorie_breakdown";
@@ -54,7 +59,8 @@ application.behavior = Behavior({
     	}
     	// Runs transition on AppContainer (which contains Header, CurrentScreen, and Footer)
     	application.run(new Push(), container.first, toScreen, { direction: pushDirection, duration: 500 });
-	}})
+	}
+})
 
 let CurrentScreen = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, 
