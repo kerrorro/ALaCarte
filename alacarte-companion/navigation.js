@@ -1,6 +1,6 @@
 import {    CrossFade,    Push,    Flip,    TimeTravel} from 'transition';
 
-let h1Style = new Style({ font:"20px Chalkduster", color:"black", horizontal:"center", vertical:"top" });
+let h1Style = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"top" });
 let barSkin = new Skin({fill: "#3DAFB8"})
 let backTexture = new Texture("assets/back.png");
 let forwardTexture = new Texture("assets/forward.png");

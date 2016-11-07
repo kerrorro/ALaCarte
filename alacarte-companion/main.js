@@ -10,7 +10,7 @@ import { calorieScreen } from "calorie_breakdown";
 import { itemSearchScreen, LocationCircle } from "item_search";
 import KEYBOARD from './keyboard';
 
-var hllStyle = new Style({ font:"20px Chalkduster", color:"black", horizontal:"center", vertical:"top" });
+var hllStyle = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"top", top: 10 });
 
 let HomeScreenLink = Label.template($ => ({
 	left: 0, right: 0, top: 0, height: 30, active: true, name: $.toScreen,
