@@ -43,7 +43,7 @@ application.behavior = Behavior({
     			//new priceScreen({ fillColor: "blue", transitionNumber: 1 });
     			break;
     		case "calorieScreen":
-    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({ fillColor: "red", transitionNumber: "2" }), footer: "Back" });
+    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen(), footer: "Back" });
     			//toScreen = new calorieScreen({ fillColor: "red", transitionNumber: 2 });
     			break;
     		case "itemSearchScreen":
