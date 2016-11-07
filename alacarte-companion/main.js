@@ -32,7 +32,7 @@ application.behavior = Behavior({
 		let pushDirection = "left";
     	switch(value){
     		case "priceScreen":
-    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({ fillColor: "blue", transitionNumber: "1" }), footer: "Back" });
+    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, footer: "Back" });
     			//new priceScreen({ fillColor: "blue", transitionNumber: 1 });
     			break;
     		case "calorieScreen":
