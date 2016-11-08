@@ -6,7 +6,7 @@ import {
 } from 'transition';
 import { Header, Footer } from "navigation";
 import { priceScreen } from "price_breakdown";
-import { calorieScreen } from "calorie_breakdown";
+import { calorieScreen, calorieDetailsScreen } from "calorie_breakdown";
 import { itemSearchScreen, LocationCircle } from "item_search";
 import KEYBOARD from './keyboard';
 
@@ -17,7 +17,7 @@ let HomeScreenLink = Label.template($ => ({
 	string: $.string, style: hllStyle,
 	behavior: Behavior({
 		onTouchEnded(container) {
-			application.distribute("transitionToScreen", container.name);
+			application.distribute("transitionToScreen", {to: container.name});
 		},
 	})
 }));
@@ -34,23 +34,33 @@ let HomeScreen = Column.template($ => ({
 
 application.behavior = Behavior({
 
-	transitionToScreen: function(container, value) {
+	transitionToScreen: function(container, params) {
 		let toScreen;
-		let pushDirection = "left";
-		let prevScreen = container.first[1].first.name
-    	switch(value){
+		var pushDirection = "left";
+		if (params.back) {
+			pushDirection = "right";
+			navHierarchy.pop();	
+		}
+		var prevScreen = navHierarchy[navHierarchy.length - 1];
+		if (params.back) {
+			navHierarchy[navHierarchy.length - 1];
+		}
+		trace(prevScreen + "\n")
+    	switch(params.to){
     		case "priceScreen":
+    			navHierarchy.push("priceScreen");
     			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, footer: "Back", prevScreen: prevScreen });
-    			//new priceScreen({ fillColor: "blue", transitionNumber: 1 });
     			break;
     		case "calorieScreen":
+    			navHierarchy.push("calorieScreen");
     			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen(), footer: "Back", prevScreen: prevScreen });
-    			//toScreen = new calorieScreen({ fillColor: "red", transitionNumber: 2 });
     			break;
+    		case "calorieDetailsScreen":
+	    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen(params.type), footer: "Back", prevScreen: prevScreen });
+	    		break;
     		case "itemSearchScreen":
     			toScreen = new AppContainer({ header: "Store Map", screen: new itemSearchScreen, footer: "Back", prevScreen: prevScreen });
     			break;
-    			//toScreen = new itemSearchScreen;
     		case "checkout":
     			toScreen = new AppContainer({ header: "Checkout", screen: new Container({left:0, right:0, top:0, bottom: 0, skin: new Skin({fill: "orange"})}), footer: "Back", prevScreen: prevScreen });
     			break;
@@ -79,6 +89,7 @@ let AppContainer = Column.template($ => ({
 	})
 }))
 
+let navHierarchy = ["home"]
 
 application.add(new AppContainer({ header: "A La Carte", screen: new HomeScreen, footer: "Checkout" }));
 

@@ -26,7 +26,7 @@ let navBehavior = Behavior({
 		button.variant = 0;
 		button.name == "back" ? toFooter = "back" : toFooter = "checkout";
 		trace(toFooter + "\n");
-		application.distribute("transitionToScreen", toFooter);
+		//application.distribute("transitionToScreen", toFooter);
 	}	
 })
 
@@ -71,7 +71,9 @@ export var Footer = Line.template($ => ({
 		},
 		
 		onTouchEnded(container) {
-			application.distribute("transitionToScreen", this.prevScreen);
+			if (container.name == "Back") {
+				application.distribute("transitionToScreen", {back: true, to: this.prevScreen});
+			}
 		}
 	})
 }));

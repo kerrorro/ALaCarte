@@ -1,5 +1,9 @@
 let percentageStyle = new Style({    color: 'black', font: '16px', horizontal: 'center', vertical: 'middle', });
 let categoryStyle = new Style({    color: 'black', font: '16px', horizontal: 'right', vertical: 'middle', });
+let categoryDetailsHeaderStyleLeft = new Style({    color: "white", font: '18px', horizontal: "left", vertical: 'middle', });
+let categoryDetailsHeaderStyleRight = new Style({    color: "white", font: '18px', horizontal: "right", vertical: 'middle', });
+let productDetailsStyleLeft = new Style({    color: "black", font: '18px', horizontal: "left", vertical: 'middle', });
+let productDetailsStyleRight = new Style({    color: "black", font: '18px', horizontal: "right", vertical: 'middle', });
 
 let whiteSkin = new Skin({fill: "white"});
 let blackSkin = new Skin({fill: "black"});
@@ -37,7 +41,8 @@ let CategoryLine = Line.template($ => {
 		],
 		behavior: Behavior({
 			onTouchEnded(categoryLine) {
-				trace(categoryLine.name + " Category Selected\n")
+				trace(categoryLine.name + " Category Selected\n");
+				application.distribute("transitionToScreen", {to: "calorieDetailsScreen", type: categoryLine.name});
 			}
 		})
 	})
@@ -55,10 +60,34 @@ let CategoryVisualBar = Line.template($ => {
 		]
 	})
 });
-export var calorieScreen = Column.template($ => ({    left: 0, right: 0, top: 0, bottom: 0,    contents: [
+export var calorieScreen = Column.template($ => ({    left: 0, right: 0, top: 0, bottom: 0, name: "calorieScreen",   contents: [
    	  new CategoryVisualBar({produce: 20, sweets: 30, grains: 12, meats: 13, dairy: 25}),
    	  new Container({left: 15, right: 15, top: 5,height: 1, skin: blackSkin}),      new CategoryLine({name: "Produce", percentage: 20, fill: "blue"}),
       new CategoryLine({name: "Sweets", percentage: 30, fill: "red"}),
       new CategoryLine({name: "Grains", percentage: 12, fill: "orange"}),
       new CategoryLine({name: "Meats", percentage: 13, fill: "green"}),
       new CategoryLine({name: "Dairy", percentage: 25, fill: "purple"}),   ]}));
+
+let calorieDetailsHeader = Line.template($ => ({
+	left: 15, right: 15, top: 15, height: 30, skin: blackSkin,
+	contents: [
+		new Label({left: 10, width: 80, top: 10, bottom: 10}, blackSkin, categoryDetailsHeaderStyleLeft, "Product"),
+		new Label({left: 10, right: 10, top: 10, bottom: 10}, blackSkin, categoryDetailsHeaderStyleRight, "Calories Per Serving"),
+	]
+}));
+
+let productDetailsLine = Line.template($ => ({
+	left: 15, right: 15, top: 15, height: 30,
+	contents: [
+		new Label({left: 10, width: 80, top: 10, bottom: 10}, null, productDetailsStyleLeft, $.productName),
+		new Label({left: 10, right: 10, top: 10, bottom: 10}, null, productDetailsStyleRight, $.productCalories),
+	]
+}));
+
+export var calorieDetailsScreen = Column.template($ => ({
+   left: 0, right: 0, top: 0, bottom: 0,    contents: [
+      new calorieDetailsHeader(),
+      new productDetailsLine({productName: "Banana", productCalories: 30}),
+      new productDetailsLine({productName: "Banana", productCalories: 30}),
+      new productDetailsLine({productName: "Banana", productCalories: 30}),   ]
+}))
