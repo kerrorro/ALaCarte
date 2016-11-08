@@ -37,24 +37,25 @@ application.behavior = Behavior({
 	transitionToScreen: function(container, value) {
 		let toScreen;
 		let pushDirection = "left";
+		let prevScreen = container.first[1].first.name
     	switch(value){
     		case "priceScreen":
-    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, footer: "Back" });
+    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, footer: "Back", prevScreen: prevScreen });
     			//new priceScreen({ fillColor: "blue", transitionNumber: 1 });
     			break;
     		case "calorieScreen":
-    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen(), footer: "Back" });
+    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen(), footer: "Back", prevScreen: prevScreen });
     			//toScreen = new calorieScreen({ fillColor: "red", transitionNumber: 2 });
     			break;
     		case "itemSearchScreen":
-    			toScreen = new AppContainer({ header: "Store Map", screen: new itemSearchScreen, footer: "Back" });
+    			toScreen = new AppContainer({ header: "Store Map", screen: new itemSearchScreen, footer: "Back", prevScreen: prevScreen });
     			break;
     			//toScreen = new itemSearchScreen;
     		case "checkout":
-    			toScreen = new AppContainer({ header: "Checkout", screen: new Container({left:0, right:0, top:0, bottom: 0, skin: new Skin({fill: "orange"})}), footer: "Back" });
+    			toScreen = new AppContainer({ header: "Checkout", screen: new Container({left:0, right:0, top:0, bottom: 0, skin: new Skin({fill: "orange"})}), footer: "Back", prevScreen: prevScreen });
     			break;
     		default: // Default is transition to HomeScreen (triggered when pressing back button)
-    			toScreen = new AppContainer({ header: "A La Carte", screen: new HomeScreen, footer: "Checkout" });
+    			toScreen = new AppContainer({ header: "A La Carte", screen: new HomeScreen, footer: "Checkout", prevScreen: prevScreen });
     			pushDirection = "right";
     	}
     	// Runs transition on AppContainer (which contains Header, CurrentScreen, and Footer)
@@ -63,14 +64,14 @@ application.behavior = Behavior({
 })
 
 let CurrentScreen = Container.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, 
+	left: 0, right: 0, top: 0, bottom: 0, name: "currentScreen",
 	contents: [$.screen]
 }))
 
 let AppContainer = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0,
+	left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
 	skin: new Skin({fill: "white"}), active: true,
-	contents: [new Header({ name: $.header }), new CurrentScreen({ screen: $.screen }), new Footer({ name: $.footer })],
+	contents: [new Header({ name: $.header }), new CurrentScreen({ screen: $.screen }), new Footer({ name: $.footer, prevScreen: $.prevScreen })],
 	behavior: Behavior({
 		onTouchEnded(container){
 		//	KEYBOARD.hide();

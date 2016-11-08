@@ -45,17 +45,20 @@ var ForwardArrow = Container.template($ => ({
 }));
 
 export var Header = Container.template($ => ({
-	left: 0, right: 0, top: 0, height: 60, 
+	left: 0, right: 0, top: 0, height: 60, name: "header",
 	skin: barSkin, name: $.name,
 	contents: [new Label({ style: h1Style, string: $.name })]
 }));
 
 
 export var Footer = Line.template($ => ({
-	left: 0, right: 0, bottom: 0, height: 60,
+	left: 0, right: 0, bottom: 0, height: 60, name: "footer", active: true,
 	skin: barSkin, name: $.name,
 	contents: [],
 	behavior: Behavior({
+	
+		prevScreen: $.prevScreen,
+		
 		onCreate(container){
 			if (container.name == "Back"){
 				container.add(new BackArrow);
@@ -65,6 +68,10 @@ export var Footer = Line.template($ => ({
 				container.add(new Label({ left: 20, style: h1Style, string: "Checkout" }));
 				container.add(new ForwardArrow);
 			}
+		},
+		
+		onTouchEnded(container) {
+			application.distribute("transitionToScreen", this.prevScreen);
 		}
 	})
 }));
