@@ -27,11 +27,33 @@ let itemInfo = {
 	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
 }
 
-var hllStyle = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"top", top: 10 });
+var hllStyle = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"middle", top: 0 });
+var hllStyleWhite = new Style({ font:"20px", color:"white", horizontal:"center", vertical:"middle", top: 0 });
+
+let forwardTexture = new Texture("assets/forward.png");
+let forwardSkin = new Skin({
+	height: 31, width: 19,
+	texture: forwardTexture,
+	variants: 19
+});
+var ForwardArrow = Container.template($ => ({
+	width: 20, right: 10, height: 25, width: 19, name: "forward",
+	skin: forwardSkin, variant: 1,
+	active: true,
+}));
 
 let HomeScreenLink = Label.template($ => ({
-	left: 0, right: 0, top: 0, height: 30, active: true, name: $.toScreen,
-	string: $.string, style: hllStyle,
+	left: 0, right: 0, top: 0, bottom: 0, active: false, name: $.toScreen,
+	string: $.string, style: hllStyleWhite,
+}));
+
+let HomeScreenItem = Line.template($ => ({
+	left: 15, right: 15, top: 10, height: 70, active: true, name: $.toScreen,
+	skin: new Skin({fill: $.color}),
+	contents: [
+		new HomeScreenLink($),
+		new ForwardArrow
+	],
 	behavior: Behavior({
 		onTouchEnded(container) {
 			application.distribute("transitionToScreen", {to: container.name});
@@ -43,9 +65,9 @@ let HomeScreenLink = Label.template($ => ({
 let HomeScreen = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({fill: "white"}), active: true, name: "home",
 	contents: [		
-		new HomeScreenLink({toScreen:"itemSearchScreen", string: "Search For An Item"}),
-		new HomeScreenLink({toScreen: "priceScreen", string: "My Cart Total"}),
-		new HomeScreenLink({toScreen: "calorieScreen", string: "Calorie Breakdown"}),
+		new HomeScreenItem({toScreen:"itemSearchScreen", string: "Search For An Item", color: "blue"}),
+		new HomeScreenItem({toScreen: "priceScreen", string: "My Cart Total", color: "red"}),
+		new HomeScreenItem({toScreen: "calorieScreen", string: "Calorie Breakdown", color: "green"}),
 	],
 }));
 
