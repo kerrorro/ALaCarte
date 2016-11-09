@@ -455,8 +455,11 @@ class ScrollerBehavior extends Behavior {
 		scrollerStillMode.bind(this, scroller);
 	}
 	onDisplaying(scroller) {
-		if ("scroll" in this.data)
-			scroller.scroll = this.data.scroll;
+		if (this && this.data) {
+			if ("scroll" in this.data) {
+				scroller.scroll = this.data.scroll;
+			}
+		}
 	}
 	onFinished(scroller) {
 		this.mode.onFinished(this, scroller);
@@ -480,8 +483,11 @@ class ScrollerBehavior extends Behavior {
 		this.mode.onTouchScrolled(this, scroller, touched, - Math.round(dx), - Math.round(dy), ticks);
 	}
 	onUndisplayed(scroller) {
-		if ("scroll" in this.data)
-			this.data.scroll = scroller.scroll;
+		if (this && this.data) {
+			if ("scroll" in this.data) {
+				this.data.scroll = scroller.scroll;
+			}
+		}
 	}
 	peek(id) {
 		return touches.peek(id);
