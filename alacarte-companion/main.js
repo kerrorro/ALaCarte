@@ -27,8 +27,6 @@ let itemInfo = {
 	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
 }
 
-
-
 var hllStyle = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"top", top: 10 });
 
 let HomeScreenLink = Label.template($ => ({
@@ -93,17 +91,21 @@ application.behavior = Behavior({
 })
 
 let CurrentScreen = Container.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, name: "currentScreen",
+	left: 0, right: 0, top: 60, bottom: 60, name: "currentScreen",
 	contents: [$.screen]
 }))
 
-let AppContainer = Column.template($ => ({
+let AppContainer = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
 	skin: new Skin({fill: "white"}), active: true,
-	contents: [new Header({ name: $.header }), new CurrentScreen({ screen: $.screen }), new Footer({ name: $.footer, prevScreen: $.prevScreen })],
+	contents: [
+		new CurrentScreen({ screen: $.screen }), 
+		new Header({ name: $.header }), 
+		new Footer({ name: $.footer, prevScreen: $.prevScreen })
+	],
 	behavior: Behavior({
 		onTouchEnded(container){
-			container.focus();
+		//	KEYBOARD.hide();
 		},
 	})
 }))
