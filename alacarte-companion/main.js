@@ -9,6 +9,25 @@ import { priceScreen } from "price_breakdown";
 import { calorieScreen, calorieDetailsScreen } from "calorie_breakdown";
 import { itemSearchScreen, LocationCircle } from "item_search";
 import KEYBOARD from './keyboard';
+import Pins from "pins";
+let remotePins;
+var deviceURL = "";
+
+/************************************/
+/**** DEVICE DETECTION HANDLERS ****/
+/***********************************/
+Handler.bind("/discover", Behavior({
+    onInvoke: function(handler, message){
+    	trace("Device connected\n");
+        deviceURL = JSON.parse(message.requestText).url;
+    }
+}));
+
+Handler.bind("/forget", Behavior({
+    onInvoke: function(handler, message){
+        deviceURL = "";
+    }
+}));
 
 
 // Hardwire Data For Now
@@ -72,7 +91,42 @@ let HomeScreen = Column.template($ => ({
 }));
 
 application.behavior = Behavior({
-
+	onDisplayed(application) {
+        application.discover("p3-device");
+    },
+    onQuit(application) {
+        application.forget("p3-device");
+    },
+    onLaunch(application) {
+        let discoveryInstance = Pins.discover(
+            connectionDesc => {
+                if (connectionDesc.name == "pins-share") {
+                    trace("Connecting to remote pins\n");
+                    remotePins = Pins.connect(connectionDesc);
+                    application.distribute("onListening");
+                }
+            }, 
+            connectionDesc => {
+                if (connectionDesc.name == "pins-share") {
+                    trace("Disconnected from remote pins\n");
+                    remotePins = undefined;
+                }
+            }
+        );
+    },
+	onPollCart(application, button){
+   		if (remotePins) {
+   			var displayString = "your pet was fed";
+   			trace("Rotating servo to dispense food\n");
+   			servoPulseWidth == 0? servoPulseWidth = 10 : servoPulseWidth = 0;
+   			var period = 10; 
+   			remotePins.invoke("/feed_servo/writeDutyCyclePeriod", {dutyCycle: servoPulseWidth, period: period});
+   		} else {
+   			var displayString = "no motor connection";	
+   		}
+		feedbackContainer.add(new Label({ style: abzFont, string: displayString}));
+		if (deviceURL != "") new Message(deviceURL + "onFed").invoke(Message.JSON);		
+    },
 	transitionToScreen: function(container, params) {
 		let toScreen;
 		var pushDirection = "left";
