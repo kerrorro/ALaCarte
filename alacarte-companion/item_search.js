@@ -55,17 +55,21 @@ let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', 
 
 
 var input;
-let EnterButton = Container.template($ => ({ skin: new Skin({fill: "blue"}),
-	height: 100, width: 200, active: true,
+let EnterButton = Container.template($ => ({ skin: new Skin({fill: "white"}),
+	//height: 100, width: 200, 
+	left: 20, right: 0, top: 0, bottom: 0,
+	active: true,
+	contents: [new Label({ style: hllStyle, string: "search" })],
 	behavior: Behavior({
 		onTouchEnded(container){
 			container.container.container.map.distribute("drawLocation", input);
+			container.focus();
 		}
 	})	
 }));
 let MyField = Container.template($ => ({ 
-	top: 5, 
-    width: 150, height: 30, skin: nameInputSkin, contents: [
+	top: 5, left: 20, bottom: 5,
+    width: 200, height: 30, skin: nameInputSkin, contents: [
         Scroller($, { 
             left: 4, right: 4, top: 4, bottom: 4, active: true, 
             Behavior: 
@@ -93,18 +97,21 @@ let MyField = Container.template($ => ({
         })
     ]
 }));
-
+let displayingError;
 let Map = Container.template($ => ({
-	name: "map", left: 0, right: 0, top: 0, bottom: 0, active: true,
+	name: "map", left: 0, right: 0, top: 10, height: 180, active: true, 
 	contents: [
 		new Container({ skin: mapSkin, height: 180, width: 280, left: 20, right: 20, top: 0 }),
 	],
 	behavior: Behavior({
-		onCreate(container){
+		onTouchEnded(container){
+			container.focus();
 		},
 		drawLocation(container, input){
+			if (displayingError){ application.distribute("removeError"); }
 			try{
 				var top = locationDict[input].row * 10;
+				displayingError = false;
 				switch(locationDict[input].offset){
 					case "right":
 						var left = 25 + locationDict[input].col * 10;	
@@ -119,7 +126,10 @@ let Map = Container.template($ => ({
 				container.add(new LocationCircle({top: top, left: left}));
 			} catch (err){
 				trace("ERROR: " + err + "\n");
-				if(err.name == "TypeError"){ trace("We don't sell " + input + "\n");}
+				if(err.name == "TypeError"){ 
+					application.distribute("printError", "We don't sell " + input);
+					displayingError = true;
+				}
 			}
 			
 		}
@@ -127,10 +137,24 @@ let Map = Container.template($ => ({
 }));
 
 let InputLine = Line.template($ => ({
-	left: 0, top: 0, right: 0, bottom: 0,
+	left: 0, left: 0, top: 10, height: 40, 
 	contents: [new MyField({name:""}), new EnterButton]
 }))
 
+let ItemList = Container.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0,
+}))
+
+
 export var itemSearchScreen = Column.template($ => ({    name: "itemSearchScreen", left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }),    contents: [      //Label($, { left: 0, right: 0, style: hugeLabelStyle, string: $.transitionNumber, }),
       new Map,
-      new InputLine   ],}));
+      new InputLine,
+      new ItemList   ],
+   behavior: Behavior({
+   	  printError(container, errorMsg){
+   	  	container.last.add(new Label({ style: hllStyle, string: errorMsg}));
+   	  },
+   	  removeError(container){
+   	  	container.last.remove(container.last.last);
+   	  }
+   })}));

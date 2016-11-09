@@ -27,6 +27,8 @@ let itemInfo = {
 	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
 }
 
+
+
 var hllStyle = new Style({ font:"20px", color:"black", horizontal:"center", vertical:"top", top: 10 });
 
 let HomeScreenLink = Label.template($ => ({
@@ -101,7 +103,7 @@ let AppContainer = Column.template($ => ({
 	contents: [new Header({ name: $.header }), new CurrentScreen({ screen: $.screen }), new Footer({ name: $.footer, prevScreen: $.prevScreen })],
 	behavior: Behavior({
 		onTouchEnded(container){
-		//	KEYBOARD.hide();
+			container.focus();
 		},
 	})
 }))
