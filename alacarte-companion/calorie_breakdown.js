@@ -60,16 +60,34 @@ let CategoryVisualBar = Line.template($ => {
 		]
 	})
 });
-export var calorieScreen = Column.template($ => ({    left: 0, right: 0, top: 0, bottom: 0, name: "calorieScreen",   contents: [
-   	  new CategoryVisualBar({produce: 20, sweets: 30, grains: 12, meats: 13, dairy: 25}),
-   	  new Container({left: 15, right: 15, top: 5,height: 1, skin: blackSkin}),      new CategoryLine({name: "Produce", percentage: 20, fill: "blue"}),
-      new CategoryLine({name: "Sweets", percentage: 30, fill: "red"}),
-      new CategoryLine({name: "Grains", percentage: 12, fill: "orange"}),
-      new CategoryLine({name: "Meats", percentage: 13, fill: "green"}),
-      new CategoryLine({name: "Dairy", percentage: 25, fill: "purple"}),   ]}));
+export var calorieScreen = Column.template($ => {
+
+	var items = $.cartData.items;
+	var totalCal = 0;
+	var calories = {"Produce": 0, "Sweets": 0, "Grains": 0, "Meats": 0, "Dairy": 0}
+	for (var item of items) {
+		var itemInfo = $.itemInfo[item];
+		totalCal += itemInfo.calories
+		calories[itemInfo.type] += itemInfo.calories
+	}
+	
+	var sweetsPercent = Math.round((calories["Sweets"] / totalCal) * 100);
+	var producePercent = Math.round((calories["Produce"] / totalCal) * 100);
+	var dairyPercent = Math.round((calories["Dairy"] / totalCal) * 100);
+	var meatsPercent = Math.round((calories["Meats"] / totalCal) * 100);
+	var grainsPercent = Math.round((calories["Grains"] / totalCal) * 100);
+
+	return ({	   left: 0, right: 0, top: 0, bottom: 0, name: "calorieScreen",	   contents: [
+	   	  new CategoryVisualBar({produce: producePercent, sweets: sweetsPercent, grains: grainsPercent, meats: meatsPercent, dairy: dairyPercent}),
+	   	  new Container({left: 15, right: 15, top: 5,height: 1, skin: blackSkin}),	      new CategoryLine({name: "Produce", percentage: producePercent, fill: "blue"}),
+	      new CategoryLine({name: "Sweets", percentage: sweetsPercent, fill: "red"}),
+	      new CategoryLine({name: "Grains", percentage: grainsPercent, fill: "orange"}),
+	      new CategoryLine({name: "Meats", percentage: meatsPercent, fill: "green"}),
+	      new CategoryLine({name: "Dairy", percentage: dairyPercent, fill: "purple"}),	   ]
+	})});
 
 let calorieDetailsHeader = Line.template($ => ({
-	left: 15, right: 15, top: 15, height: 30, skin: blackSkin,
+	left: 10, right: 10, top: 15, height: 30, skin: blackSkin,
 	contents: [
 		new Label({left: 10, width: 80, top: 10, bottom: 10}, blackSkin, categoryDetailsHeaderStyleLeft, "Product"),
 		new Label({left: 10, right: 10, top: 10, bottom: 10}, blackSkin, categoryDetailsHeaderStyleRight, "Calories Per Serving"),
@@ -79,15 +97,23 @@ let calorieDetailsHeader = Line.template($ => ({
 let productDetailsLine = Line.template($ => ({
 	left: 15, right: 15, top: 15, height: 30,
 	contents: [
-		new Label({left: 10, width: 80, top: 10, bottom: 10}, null, productDetailsStyleLeft, $.productName),
-		new Label({left: 10, right: 10, top: 10, bottom: 10}, null, productDetailsStyleRight, $.productCalories),
+		new Label({left: 10, right: 10, top: 10, bottom: 10}, null, productDetailsStyleLeft, $.productName),
+		new Label({left: 10, width: 30, top: 10, bottom: 10}, null, productDetailsStyleRight, $.productCalories),
 	]
 }));
 
-export var calorieDetailsScreen = Column.template($ => ({
-   left: 0, right: 0, top: 0, bottom: 0,    contents: [
-      new calorieDetailsHeader(),
-      new productDetailsLine({productName: "Banana", productCalories: 30}),
-      new productDetailsLine({productName: "Banana", productCalories: 30}),
-      new productDetailsLine({productName: "Banana", productCalories: 30}),   ]
-}))
+export var calorieDetailsScreen = Column.template($ => {
+	
+	var contents = [new calorieDetailsHeader()]
+	var items = $.cartData.items;
+	for (var item of items) {
+		var itemInfo = $.itemInfo[item];
+		if (itemInfo.type == $.type) {
+			contents.push(new productDetailsLine({productName: itemInfo.name, productCalories: itemInfo.calories}));
+		}
+	}
+	
+	return ({
+	   left: 0, right: 0, top: 0, bottom: 0, 	   contents: contents
+	});
+});

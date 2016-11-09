@@ -70,10 +70,10 @@ application.behavior = Behavior({
     			break;
     		case "calorieScreen":
     			navHierarchy.push("calorieScreen");
-    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen(), footer: "Back", prevScreen: prevScreen });
+    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}), footer: "Back", prevScreen: prevScreen });
     			break;
     		case "calorieDetailsScreen":
-	    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen(params.type), footer: "Back", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type}), footer: "Back", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
 	    		break;
     		case "itemSearchScreen":
     			toScreen = new AppContainer({ header: "Store Map", screen: new itemSearchScreen, footer: "Back", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
