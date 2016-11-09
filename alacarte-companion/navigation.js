@@ -47,7 +47,7 @@ var ForwardArrow = Container.template($ => ({
 export var Header = Container.template($ => ({
 	left: 0, right: 0, top: 0, height: 60, name: "header",
 	skin: barSkin, name: $.name,
-	contents: [new Label({ style: h1Style, string: $.name })]
+	contents: [new Label({ style: h1Style, string: $.string })]
 }));
 
 

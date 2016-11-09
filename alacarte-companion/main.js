@@ -122,14 +122,9 @@ let AppContainer = Container.template($ => ({
 	skin: new Skin({fill: "white"}), active: true,
 	contents: [
 		new CurrentScreen({ screen: $.screen }), 
-		new Header({ name: $.header }), 
+		new Header({ string: $.header }), 
 		new Footer({ name: $.footer, prevScreen: $.prevScreen })
-	],
-	behavior: Behavior({
-		onTouchEnded(container){
-		//	KEYBOARD.hide();
-		},
-	})
+	],
 }))
 
 let navHierarchy = ["home"]

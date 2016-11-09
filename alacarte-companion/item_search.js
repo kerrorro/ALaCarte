@@ -62,7 +62,9 @@ let EnterButton = Container.template($ => ({ skin: new Skin({fill: "white"}),
 	contents: [new Label({ style: hllStyle, string: "search" })],
 	behavior: Behavior({
 		onTouchEnded(container){
-			container.container.container.map.distribute("drawLocation", input);
+			if(input != ""){
+				container.container.container.map.distribute("drawLocation", input);
+			}
 			container.focus();
 		}
 	})	
@@ -108,6 +110,7 @@ let Map = Container.template($ => ({
 			container.focus();
 		},
 		drawLocation(container, input){
+			input = input.trim();
 			if (displayingError){ application.distribute("removeError"); }
 			try{
 				var top = locationDict[input].row * 10;
