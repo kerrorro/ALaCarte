@@ -6,9 +6,9 @@ let footerSkin = new Skin({ fill: "white" });
 
 let navTexture = new Texture("assets/navBar.png");
 let navSkin = new Skin({
-	height: 15, width: 90,
+	height: 60, width: 90,
 	texture: navTexture,
-	states: 15, variants: 90
+	states: 60, variants: 90
 });
 
 let navBehavior = Behavior({
@@ -47,23 +47,16 @@ let LineBreak = Container.template($ => ({
 	skin: new Skin({fill: "#D7D7D7"})
 }))
 
-var NavIcon = {};
-
-var NavText = Content.template($ => ({
-	left: 0, bottom: 10,
-	height: 15, width: 90, state: $.state, 
+var NavButton = Content.template($ => ({
+	left: 0, bottom: 8,
+	height: 60, width: 90, state: $.state, 
 	name: $.name, active: true, skin: navSkin,
 	behavior: navBehavior
 }));
 
-var navButton = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0,
-	
-}));
-
 var NavContainer = Line.template($ => ({
 	top: 0, bottom: 0, 
-	contents: [new NavText({ name: "overview", state: 1 }), new NavText({ name: "cost"}), new NavText({ name: "nutrition"}), new NavText({ name: "search"}) ]
+	contents: [new NavButton({ name: "overview", state: 1 }), new NavButton({ name: "cost"}), new NavButton({ name: "nutrition"}), new NavButton({ name: "search"}) ]
 }))
 
 
