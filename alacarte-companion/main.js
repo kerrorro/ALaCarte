@@ -59,15 +59,56 @@ var ForwardArrow = Container.template($ => ({
 	active: true,
 }));
 
+let backTexture = new Texture("assets/back.png");
+let backSkin = new Skin({
+ 	height: 31, width: 19,
+ 	texture: backTexture,
+ 	variants: 19
+});
+var BackArrow = Container.template($ => ({
+	width: 20, right: 10, height: 25, width: 19, name: "back",
+	skin: backSkin, variant: 1,
+	active: true,
+}));
 
+let CostOverview = Content.template($ => ({}));
+let CalorieOverview = Content.template($ => ({}));
 
+let checkoutTexture = new Texture("assets/checkoutButton.png");
+let checkoutSkin = new Skin({
+	width: 291, height: 47,
+	texture: checkoutTexture,
+	variants: 291
+});
+
+let CheckoutButton = Content.template($ => ({
+	width: 291, height: 47, top: 0, bottom: 0,
+	skin: checkoutSkin, variant: 0,
+	active: true, 
+	behavior: Behavior({
+		onTouchBegan: function(button){
+			button.variant = 1;
+		},
+		onTouchEnded: function(button){
+			button.variant = 0;
+			application.distribute("transitionToScreen", { to: "checkout" });
+		}
+	})
+}));
+
+let CheckoutScreen = Line.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0,
+	
+}));
 
 let OverviewScreen = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({fill: "white"}), active: true, name: "overview",
+	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
 	contents: [		
-
+		new CheckoutButton
 	],
 }));
+
+
 
 application.behavior = Behavior({
 	onDisplayed(application) {
@@ -97,13 +138,13 @@ application.behavior = Behavior({
 })
 
 let CurrentScreen = Container.template($ => ({
-	left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen",
+	left: 0, right: 0, top: 70, bottom: 0, name: $.screen.name,
 	contents: [$.screen]
 }))
 
 let AppContainer = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
-	skin: new Skin({fill: "#D7D7D7"}), active: true,
+	skin: new Skin({fill: "white"}), active: true,
 	contents: [
 		new CurrentScreen({ screen: $.screen }), 
 		new Header({ string: $.header }), 
@@ -111,43 +152,43 @@ let AppContainer = Container.template($ => ({
 	behavior: Behavior({
 		transitionToScreen: function(container, params) {
 			let toScreen;
-			if (params.back) {
-				pushDirection = "right";
-				navHierarchy.pop();	
-			}
-			var prevScreen = navHierarchy[navHierarchy.length - 1];
-			if (params.back) {
-				navHierarchy[navHierarchy.length - 1];
-			}
-			trace(prevScreen + "\n")
 	    	switch(params.to){
 	    		case "cost":
-	    			navHierarchy.push("priceScreen");
-	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    			navHierarchy.unshift(3);
+	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, itemInfo: itemInfo, cartData: cartData });
+	    			toScreen.name = "cost";
 	    			break;
 	    		case "nutrition":
-	    			navHierarchy.push("calorieScreen");
-	    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}), prevScreen: prevScreen });
+	    			navHierarchy.unshift(4);
+	    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}) });
 	    			break;
 	    		case "calorieDetailsScreen":
-		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type}),  prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    			navHierarchy.unshift(5);
+		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type}), itemInfo: itemInfo, cartData: cartData });
 		    		break;
 	    		case "search":
-	    			toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen,  prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    			navHierarchy.unshift(6);
+	    			toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen, itemInfo: itemInfo, cartData: cartData });
 	    			break;
 	    		case "checkout":
-	    			toScreen = new AppContainer({ header: "Checkout", screen: new Container({left:0, right:0, top:0, bottom: 0, skin: new Skin({fill: "orange"})}),  prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    			navHierarchy.unshift(2);
+	    			toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen, itemInfo: itemInfo, cartData: cartData });
 	    			break;
 	    		default: // Default is transition to OverviewScreen (triggered when pressing back button)
-	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, footer: "Checkout", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+	    			navHierarchy.unshift(1);
+	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
 	    	}	
 	    	// Runs transition on AppContainer (which contains Header and CurrentScreen)
-	    	container.run(new CrossFade(), container.first, toScreen, { duration: 500 });	
+	    	var prevScreenNum = navHierarchy.pop();
+	    	var currentScreenNum = navHierarchy[0];
+	    	var pushDirection;
+	    	currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
+	    	container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
 		}
 	})
 }))
 
-let navHierarchy = ["overview"]
+let navHierarchy = [1]
 
 application.add(new AppContainer({ header: "A La Carte", screen: new OverviewScreen }));
 application.add(new Footer);

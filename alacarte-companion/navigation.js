@@ -34,7 +34,7 @@ let navBehavior = Behavior({
 			// Switch state of pressed nav button to active
 			nav.state = 1;
 			// Nav buttons are named after the screen they link to
-			application.distribute("transitionToScreen", { to: nav.name });
+			application.first.delegate("transitionToScreen", { to: nav.name,  });
 		}
 	},
 	onInactivate: function(nav){
