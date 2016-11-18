@@ -33,7 +33,7 @@ Handler.bind("/forget", Behavior({
 
 // Hardwire Data For Now
 let cartData = {
-	items: [0, 1, 2, 3, 4], // array of item ids; use itemInfo dictionary for more info
+	items: [0, 1, 2, 3, 4, 5], // array of item ids; use itemInfo dictionary for more info
 	location: "Unsure what to put here -- Caroline might know better"
 }
 
@@ -45,6 +45,7 @@ let itemInfo = {
 	2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread" },
 	3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef" },
 	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
+	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk" },
 }
 
 let forwardTexture = new Texture("assets/forward.png");
@@ -83,7 +84,9 @@ application.behavior = Behavior({
                     trace("Connecting to remote pins\n");
                     remotePins = Pins.connect(connectionDesc);
                     application.distribute("onListening");
-                    remotePins.repeat("/cartData/read", 1000, result => {          				trace("COMPANION: " + result + "\n");			        }); 
+                    remotePins.repeat("/cartData/read", 1000, result => {
+          				trace("COMPANION: " + result + "\n");
+			        }); 
                 }
             }, 
             connectionDesc => {
@@ -106,7 +109,8 @@ let AppContainer = Container.template($ => ({
 	skin: new Skin({fill: "#D7D7D7"}), active: true,
 	contents: [
 		new CurrentScreen({ screen: $.screen }), 
-		new Header({ string: $.header }), 
+		new Header({ string: $.header }), 
+
 	],
 	behavior: Behavior({
 		transitionToScreen: function(container, params) {
@@ -139,12 +143,16 @@ let AppContainer = Container.template($ => ({
 	    			toScreen = new AppContainer({ header: "Checkout", screen: new Container({left:0, right:0, top:0, bottom: 0, skin: new Skin({fill: "orange"})}),  prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
 	    			break;
 	    		default: // Default is transition to OverviewScreen (triggered when pressing back button)
-	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, footer: "Checkout", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
-	    	}	
+	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, footer: "Checkout", prevScreen: prevScreen, itemInfo: itemInfo, cartData: cartData });
+
+	    	}
+	
 	    	// Runs transition on AppContainer (which contains Header and CurrentScreen)
-	    	container.run(new CrossFade(), container.first, toScreen, { duration: 500 });	
+	    	container.run(new CrossFade(), container.first, toScreen, { duration: 500 });
+	
 		}
-	})
+	})
+
 }))
 
 let navHierarchy = ["overview"]
