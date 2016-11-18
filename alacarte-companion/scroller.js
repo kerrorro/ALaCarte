@@ -469,6 +469,7 @@ class ScrollerBehavior extends Behavior {
 	}
 	onTouchBegan(scroller, id, x, y, ticks) {
 		this.mode.onTouchBegan(this, scroller, id, x, y, ticks);
+		scroller.focus();
 	}
 	onTouchCancelled(scroller, id, x, y, ticks) {
 		this.mode.onTouchCancelled(this, scroller, id, x, y, ticks);
