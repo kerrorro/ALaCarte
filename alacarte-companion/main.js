@@ -4,7 +4,7 @@ import {
     Flip,
     TimeTravel
 } from 'transition';
-import { Header, Footer } from "navigation";
+import { BackArrow, ForwardArrow, Header, Footer } from "navigation";
 import { priceScreen } from "price_breakdown";
 import { calorieScreen, calorieDetailsScreen } from "calorie_breakdown";
 import { itemSearchScreen, LocationCircle } from "item_search";
@@ -48,29 +48,10 @@ let itemInfo = {
 	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk" },
 }
 
-let forwardTexture = new Texture("assets/forward.png");
-let forwardSkin = new Skin({
-	height: 31, width: 19,
-	texture: forwardTexture,
-	variants: 19
-});
-var ForwardArrow = Container.template($ => ({
-	width: 20, right: 10, height: 25, width: 19, name: "forward",
-	skin: forwardSkin, variant: 1,
-	active: true,
-}));
 
-let backTexture = new Texture("assets/back.png");
-let backSkin = new Skin({
- 	height: 31, width: 19,
- 	texture: backTexture,
- 	variants: 19
-});
-var BackArrow = Container.template($ => ({
-	width: 20, right: 10, height: 25, width: 19, name: "back",
-	skin: backSkin, variant: 1,
-	active: true,
-}));
+
+
+
 
 let CostOverview = Content.template($ => ({}));
 let CalorieOverview = Content.template($ => ({}));
@@ -98,7 +79,8 @@ let CheckoutButton = Content.template($ => ({
 }));
 
 let CheckoutScreen = Line.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0,
+	left: 0, right: 0, top: 0, bottom: 0, name: "checkout",
+	contents: [new BackArrow({ name: navHierarchy[0] })],
 	
 }));
 
@@ -141,7 +123,7 @@ application.behavior = Behavior({
 })
 
 let CurrentScreen = Container.template($ => ({
-	left: 0, right: 0, top: 70, bottom: 0, name: $.screen.name,
+	left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen",
 	contents: [$.screen]
 }))
 
@@ -158,42 +140,42 @@ let AppContainer = Container.template($ => ({
 			let toScreen;
 	    	switch(params.to){
 	    		case "cost":
-	    			navHierarchy.unshift(3);
+	    			navHierarchy.unshift("3");
 	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, itemInfo: itemInfo, cartData: cartData });
 	    			toScreen.name = "cost";
 	    			break;
 	    		case "nutrition":
-	    			navHierarchy.unshift(4);
+	    			navHierarchy.unshift("4");
 	    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}) });
 	    			break;
-	    		case "calorieDetailsScreen":
-	    			navHierarchy.unshift(5);
+	    		case "nutritionDetails":
+	    			navHierarchy.unshift("5");
 		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type}), itemInfo: itemInfo, cartData: cartData });
 		    		break;
 	    		case "search":
-	    			navHierarchy.unshift(6);
+	    			navHierarchy.unshift("6");
 	    			toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen, itemInfo: itemInfo, cartData: cartData });
 	    			break;
 	    		case "checkout":
-	    			navHierarchy.unshift(2);
+	    			navHierarchy.unshift("2");
 	    			toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen, itemInfo: itemInfo, cartData: cartData });
 	    			break;
 	    		default: // Default is transition to OverviewScreen (triggered when pressing back button)
-	    			navHierarchy.unshift(1);
+	    			navHierarchy.unshift("1");
 	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
 	    	}	
 	    	// Runs transition on AppContainer (which contains Header and CurrentScreen)
 	    	var prevScreenNum = navHierarchy.pop();
 	    	var currentScreenNum = navHierarchy[0];
 	    	var pushDirection;
-	    	trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
+	    	//trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
 	    	currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
 	    	container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
 		}
 	})
 }))
 
-let navHierarchy = [1]
+let navHierarchy = ["1"]
 
 application.add(new AppContainer({ header: "A La Carte", screen: new OverviewScreen }));
 application.add(new Footer);

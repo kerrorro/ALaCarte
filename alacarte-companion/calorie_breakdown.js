@@ -1,3 +1,5 @@
+import { ForwardArrow } from 'navigation';
+
 Handler.bind("/setTimeout", {
     onInvoke: function(handler, message){
         handler.wait(message.requestObject.duration);
@@ -40,19 +42,7 @@ let categoryTotalTitleStyle = new Style({
 });
 
 let whiteSkin = new Skin({fill: "white"});
-let blackSkin = new Skin({fill: "black"});
-
-let forwardTexture = new Texture("assets/forward.png");
-let forwardSkin = new Skin({
-	height: 31, width: 19,
-	texture: forwardTexture,
-	variants: 19
-});
-var ForwardArrow = Container.template($ => ({
-	right: 0, height: 25, width: 19, name: "forward",
-	skin: forwardSkin, variant: 1,
-	active: true,
-}));
+let blackSkin = new Skin({fill: "black"});
 
 var animator = function($) {
 	if ($.container.width >= $.width) {
@@ -92,7 +82,7 @@ let FoodGroupLabels = Line.template($ => {
 		contents: [
 			new Label({left: 0, top: 0, height: 40}, null, percentageLabelStyle, $.percentage + "%"),
 			new Label({left: 10, right: 0, top: 0, height: 40}, null, foodGroupTitleLabelStyle, $.name.charAt(0).toLowerCase() + $.name.slice(1)),
-			new ForwardArrow
+			new ForwardArrow({ name: "4" + $.name })
 		]
 	})
 });
@@ -111,7 +101,7 @@ let FoodGroupInfo = Column.template($ => {
 		behavior: Behavior({
 			onTouchEnded(categoryLine) {
 				trace(categoryLine.name + " Category Selected\n");
-				application.first.delegate("transitionToScreen", {to: "calorieDetailsScreen", type: categoryLine.name});
+				application.first.delegate("transitionToScreen", {to: "nutritionDetails", type: categoryLine.name});
 			}
 		})
 	})

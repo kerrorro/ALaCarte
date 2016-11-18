@@ -40,7 +40,7 @@ let locationDict = {
 
 var userInput = []
 
-
+// Fade transition for the error message.
 var Fade = function() {
     Transition.call(this, 250);
 };
@@ -64,7 +64,7 @@ Fade.prototype = Object.create(Transition.prototype, {
     },
 });
 
-
+// Location Circles can either be on map or on list
 var mapCircleCount = 0;
 export var LocationCircle = Container.template($ => ({
 	top: $.top, left: $.left, height: 15, width: 15,
@@ -110,7 +110,6 @@ export var LocationCircle = Container.template($ => ({
 		}
 	})
 }));
-
 
 
 
@@ -166,6 +165,12 @@ let MyField = Container.template($ => ({
     ]
 }));
 
+let InputLine = Line.template($ => ({
+	left: 0, left: 0, top: 280, height: 50, skin: whiteSkin,
+	contents: [new MyField({name: ""}), new EnterButton]
+}))
+
+
 let Map = Container.template($ => ({
 	name: "map", left: 0, right: 0, top: 50,  active: true, skin: whiteSkin,
 	contents: [
@@ -208,10 +213,6 @@ let Map = Container.template($ => ({
 	})
 }));
 
-let InputLine = Line.template($ => ({
-	left: 0, left: 0, top: 280, height: 50, skin: whiteSkin,
-	contents: [new MyField({name: ""}), new EnterButton]
-}))
 
 let ItemLine = Line.template($ => ({
 	left: 0, right: 0, top: 0, active: true,
