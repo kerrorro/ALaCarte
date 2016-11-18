@@ -2,20 +2,30 @@ import {
     FieldScrollerBehavior,
     FieldLabelBehavior
 } from 'field';
-
 import KEYBOARD from './keyboard';
 
-let feedbackStyle = new Style({ font: "30px Open Sans", color: "#828282" });
-let itemStyle = new Style({ font: "24px Open Sans", color: "#828282" });
+let feedbackStyle = new Style({ font: "30px Open Sans", color: "white" });
+let itemStyle = new Style({ font: "bold 24px Open Sans", color: "#828282" });
+let itemStyleTouch = new Style({ font: "bold 24px Open Sans", color: "#E94363" });
 let locationStyle = new Style({ font: "18px Quicksand", color: "#828282" });
+let locationStyleTouch = new Style({ font: "18px Quicksand", color: "#E94363" });
 
 let locationImg = new Texture("assets/location.png");
 let mapImg = new Texture("assets/store_map.png");
 let searchImg = new Texture("assets/searchIcon.png");
 
+let feedbackSkin = new Skin({ fill: "#E94363" });
 let locationSkin = new Skin({ width: 15, height: 15, texture: locationImg, variants: 15});
 let mapSkin = new Skin({ width: 337, height: 220, texture: mapImg });
 let searchSkin = new Skin({ width: 30, height: 30, texture: searchImg, variants: 30 });
+
+let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: 'white', stroke: '#828282' });
+let fieldStyle = new Style({ color: '#828282', font: 'bold 24px Open Sans', horizontal: 'middle',
+    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let fieldHintStyle = new Style({ color: "#BDBDBD", font: '20px Open Sans', horizontal: 'middle',
+    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let whiteSkin = new Skin({ fill: "white" });
+let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
 
 let locationDict = {
 	"bread": { area: "Bakery", row: 12, col: 1 },
@@ -27,15 +37,41 @@ let locationDict = {
 
 var userInput = []
 
+
+var Fade = function() {
+    Transition.call(this, 250);
+};
+Fade.prototype = Object.create(Transition.prototype, {
+    onBegin: { value: 
+        function(feedbackCont, oldFeedback, newFeedback) {
+            feedbackCont.add(newFeedback);
+            this.layer = new Layer;
+            this.layer.attach(newFeedback);
+        }
+    },
+    onEnd: { value: 
+        function(feedbackCont, oldFeedback, newFeedback) {
+            feedbackCont.remove(oldFeedback);
+        }
+    },
+    onStep: { value: 
+        function(fraction) {
+            this.layer.opacity = fraction;
+        }
+    },
+});
+
+
 var circleCount = 0;
 export var LocationCircle = Container.template($ => ({
 	top: $.top, left: $.left, height: 15, width: 15,
 	name: $.name, skin: locationSkin, variant: 0, active: true,
-	interval: 300,
+	interval: 300, // Interval for onTimeChanged (blinking)
 	behavior: Behavior({
 		onCreate(circle){
 			circleCount++;
-			circle.start();
+			trace("CIRCLE NAME: " + circle.name + "\n");
+			if (circle.name != "listCircle"){ circle.start(); }
 		},
 		onTimeChanged(circle){
 			circle.variant == 0 ? circle.variant = 1 : circle.variant = 0;
@@ -45,22 +81,32 @@ export var LocationCircle = Container.template($ => ({
 			trace("removing circle \n");
 			circle.container.remove(circle);
 		},
-		inactivateCircle(circle){
-			trace("inactivating circle \n");
+		inactivateCircle(circle){ 	// Upon new location addition:
+			// Stops blinking
 			circle.stop();
-			circle.variant = 1;
+			if(circle.name == "listCircle" && circle.visible){
+				// Hides old list circles and sets to red color
+				circle.variant = 0;
+				circle.visible = false;
+			} else {
+			// Map circles set to peach color
+				circle.variant = 1;
+			}
+		},
+		switchCircle(circle, foodStr){		// Starts blinking of selection and hides other circles
+			if (circle.name == "listCircle"){
+				circle.variant = 0;
+				circle.visible = false;
+			} else {
+				circle.name == foodStr ? circle.start() : circle.stop();
+				circle.name == foodStr ? circle.variant = 0 : circle.variant = 1;
+			}
+			
 		}
 	})
 }));
 
 
-let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: 'white', stroke: '#828282' });
-let fieldStyle = new Style({ color: '#828282', font: 'bold 24px Open Sans', horizontal: 'middle',
-    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
-let fieldHintStyle = new Style({ color: "#BDBDBD", font: '20px Open Sans', horizontal: 'middle',
-    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
-let whiteSkin = new Skin({ fill: "white" });
-let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
 
 
 var input;
@@ -114,9 +160,9 @@ let MyField = Container.template($ => ({
         })
     ]
 }));
-let displayingError;
+
 let Map = Container.template($ => ({
-	name: "map", left: 0, right: 0, top: 50,  active: true, 
+	name: "map", left: 0, right: 0, top: 10,  active: true, 
 	contents: [
 		new Container({ skin: mapSkin, left: 0, right: 0, top: 0, bottom: 0, }),
 	],
@@ -126,13 +172,10 @@ let Map = Container.template($ => ({
 		},
 		drawLocation(container, input){
 			input = input.trim();
-			
-			if (displayingError){ application.distribute("removeError"); }
 			try{
 				if (!(userInput.includes(input))){
 					userInput.push(input);
 					var top = locationDict[input].row * 12;
-					displayingError = false;
 					switch(locationDict[input].offset){
 						case "right":
 							var left = 25 + locationDict[input].col * 12;	
@@ -152,10 +195,8 @@ let Map = Container.template($ => ({
 			} catch (err){
 				trace("ERROR: " + err + "\n");
 				if(err.name == "TypeError"){ 
-					application.distribute("printError", "We don't sell " + input);
-					
+					application.distribute("printError", "Sorry, we don't sell " + input);
 					//while(circleCount > 0) { application.distribute("clearLocation"); }
-					displayingError = true;
 				}
 			}
 			
@@ -171,10 +212,10 @@ let InputLine = Line.template($ => ({
 let ItemLine = Line.template($ => ({
 	left: 0, right: 0, top: 0, active: true,
 	contents: [
-		new LocationCircle({ name: "active", top: 0, left: 0 }),
-		new Label({ string: $.item, style: itemStyle })
+		new LocationCircle({ name: "listCircle" }),
+		new Label({ name: "food", string: $.item, style: itemStyle, left: 20 })
 	],
-	behavior: Behavior($ => ({
+	behavior: Behavior({
 		onCreate: function(container){
 			trace($.area + "\n");
 			trace($.item + "\n");
@@ -182,32 +223,59 @@ let ItemLine = Line.template($ => ({
 			if(typeof $.area === "string"){
 				string = $.area;
 			} else {
-				string = "Aisle {%$.area}";
+				string = "Aisle " + $.area;
 			}
-			container.add(new Label({ string: string, style: locationStyle }))
-		}
-	}))
-}))
-
-let ItemList = Container.template($ => ({
-	left: 10, right: 10, top: 5, active: true,
-	behavior: Behavior({
-		updateList: function(listContainer){
-			listContainer.add(new ItemLine());
+			container.add(new Label({ name: "location", string: string, style: locationStyle, left: 10, right: 0 }));
+		},
+		onTouchBegan: function(container){
+			container.food.style = itemStyleTouch;
+			container.location.style = locationStyleTouch;
+		},
+		onTouchEnded: function(container){
+			container.food.style = itemStyle;
+			container.location.style = locationStyle;
+			application.distribute("switchCircle", container.food.string);
+			container.listCircle.visible = true;	// Show clicked list circle
 		}
 	})
 }))
 
+let ItemList = Column.template($ => ({
+	left: 20, right: 20, top: 5, active: true,
+	behavior: Behavior({
+		onTouchEnded: function(container){
+			container.focus();
+		},
+		updateList: function(listContainer, params){
+			if (circleCount == 1) { listContainer.add(new ItemLine(params)); }
+			else { listContainer.insert(new ItemLine(params), listContainer.first); }
+		}
+	})
+}))
 
-export var itemSearchScreen = Column.template($ => ({    name: "itemSearchScreen", left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }),    contents: [
+let FeedbackLine = Container.template($ => ({ left: 0, right: 0, top: 0, bottom: 0, skin: $.skin }));
+
+export var itemSearchScreen = Column.template($ => ({    name: "search", left: 0, right: 0, top: 0, bottom: 0,     contents: [
+   	  new Container({ left: 0, right: 0, top: 0, height: 50, contents: new FeedbackLine({})}),
       new Map,
       new InputLine,
       new ItemList   ],
    behavior: Behavior({
-   	  printError(container, errorMsg){
-   	  	container.last.add(new Label({ style: feedbackStyle, string: errorMsg}));
-   	  },
-   	  removeError(container){
-   	  	container.last.remove(container.last.last);
-   	  }
+   	  	printError(container, errorMsg){
+	   	  	var oldFeedback = container.first.first;
+	   	  	container.first.run(new Fade, oldFeedback, new FeedbackLine({ skin: feedbackSkin }));
+	   	  	//container.first.skin = feedbackSkin;
+	   	  	// Waits 1 sec before calling onComplete to remove the error message
+	   	  	container.wait(1500);
+	   	  	container.first.last.add(new Label({ style: feedbackStyle, string: errorMsg}));
+   		  },
+   	  	removeError(container){
+   	  	},
+   	 	onComplete(container){
+   	  		// Removes the error after wait time
+   	  		container.first.run(new Fade, container.first.first, new FeedbackLine({ skin: whiteSkin }));
+   	 	}
    })}));
+
+
+

@@ -91,7 +91,7 @@ let CheckoutButton = Content.template($ => ({
 		},
 		onTouchEnded: function(button){
 			button.variant = 0;
-			application.distribute("transitionToScreen", { to: "checkout" });
+			application.first.delegate("transitionToScreen", { to: "checkout" });
 		}
 	})
 }));
@@ -182,6 +182,7 @@ let AppContainer = Container.template($ => ({
 	    	var prevScreenNum = navHierarchy.pop();
 	    	var currentScreenNum = navHierarchy[0];
 	    	var pushDirection;
+	    	trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
 	    	currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
 	    	container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
 		}

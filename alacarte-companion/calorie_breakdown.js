@@ -83,7 +83,7 @@ let FoodGroupInfo = Column.template($ => {
 		behavior: Behavior({
 			onTouchEnded(categoryLine) {
 				trace(categoryLine.name + " Category Selected\n");
-				application.distribute("transitionToScreen", {to: "calorieDetailsScreen", type: categoryLine.name});
+				application.first.delegate("transitionToScreen", {to: "calorieDetailsScreen", type: categoryLine.name});
 			}
 		})
 	})
