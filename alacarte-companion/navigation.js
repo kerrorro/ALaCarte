@@ -1,4 +1,9 @@
-import {    CrossFade,    Push,    Flip,    TimeTravel} from 'transition';
+import {
+    CrossFade,
+    Push,
+    Flip,
+    TimeTravel
+} from 'transition';
 
 let headerStyle = new Style({ font:"30px Quicksand", color:"white", horizontal:"center", vertical:"top" });
 
@@ -118,23 +123,22 @@ export var Header = Container.template($ => ({
 
 export var Footer = Column.template($ => ({
 	left: 0, right: 0, bottom: 0, height: 74, name: "footer", active: true,
-	skin: footerSkin, 
+	skin: footerSkin,
 	contents: [new LineBreak, new NavContainer],
 }));
 
 /***** ARROWS *****/
-// name should be navHierarchy[0] from main screen -- arrows named after the currently displayed screenexport var ForwardArrow = Container.template($ => ({
-	width: 20, height: 40, name: $.name,
+// name should be navHierarchy[0] from main screen -- arrows named after the currently displayed screen
+export var ForwardArrow = Container.template($ => ({
+	width: 20, height: 40, name: $.name, active: ($.isActive != undefined ? $.isActive : true),
 	left: $.left, right: $.right, top: $.top, bottom: $.bottom, 
 	skin: forwardSkin, variant: 1,
-	active: true,
 	behavior: arrowBehavior
 }));
 
 export var BackArrow = Container.template($ => ({
-	width: 20, height: 40, name: $.name,
+	width: 20, height: 40, name: $.name, active: ($.isActive ? $.isActive : true),
 	left: $.left, right: $.right, top: $.top, bottom: $.bottom, 
 	skin: backSkin, variant: 1,
-	active: true,
 	behavior: arrowBehavior
 }));
