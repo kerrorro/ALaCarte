@@ -10,12 +10,19 @@ import { calorieScreen, calorieDetailsScreen } from "calorie_breakdown";
 import { itemSearchScreen, LocationCircle } from "item_search";
 import KEYBOARD from './keyboard';
 import Pins from "pins";
-let remotePins;
-var deviceURL = "";
 
-/************************************/
+let remotePins;
+let navHierarchy = ["1"]
+
+/*** USER INPUT & DEVICE VARIABLES ***/
+var deviceURL = "";
+var userNum;
+var userBudget;
+var currentPrice = "$80.48";
+var currentCalories = "280";
+
+
 /**** DEVICE DETECTION HANDLERS ****/
-/***********************************/
 Handler.bind("/discover", Behavior({
     onInvoke: function(handler, message){
     	trace("Device connected\n");
@@ -29,8 +36,19 @@ Handler.bind("/forget", Behavior({
     }
 }));
 
+/***** STYLES *****/
+let h1style = new Style({ font: "bold 45px Open Sans", color: "#828282" });
+let h2style = new Style({ font: "30px Open Sans", color: "#828282" });
+let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
+
+/***** PICTURES, TEXTURES, AND SKINS *****/
+let mainLogoImg = new Picture({ bottom: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
+let checkoutTexture = new Texture("assets/checkoutButton.png");
+let checkoutSkin = new Skin({ width: 291, height: 47, texture: checkoutTexture, variants: 291 });
+let whiteSkin = new Skin({fill: "white"});
 
 
+/****** DATA ******/
 // Hardwire Data For Now
 let cartData = {
 	items: [0, 1, 2, 3, 4, 5], // array of item ids; use itemInfo dictionary for more info
@@ -49,22 +67,35 @@ let itemInfo = {
 }
 
 
+let LoginScreen = Column.template($ => ({
+	contents:[
+		mainLogoImg,
+		new Container({ left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "blue" }) })
+	]
+}));
+
+let CostOverview = Container.template($ => ({
+	left: 0, right: 0, top: 0, height: 265,
+	contents: [
+		new Label({ top: 0, bottom: 0, string: currentPrice, style: h1style }),
+		new Label({ top: 50, bottom: 0, left: 75, right: 0, string: "/ " + userBudget, style: h3style })
+	]
+	
+}));
+let CalorieOverview = Column.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 20,
+	contents: [
+		new Label({ top: 10, string: currentCalories, style: h1style }),
+		new Label({top: 0, string: "average calories", style: h2style }),
+		new Label({top: 0, string: "per serving", style: h3style })
+	]
+	
+}));
 
 
-
-
-let CostOverview = Content.template($ => ({}));
-let CalorieOverview = Content.template($ => ({}));
-
-let checkoutTexture = new Texture("assets/checkoutButton.png");
-let checkoutSkin = new Skin({
-	width: 291, height: 47,
-	texture: checkoutTexture,
-	variants: 291
-});
 
 let CheckoutButton = Content.template($ => ({
-	width: 291, height: 47, top: 0, bottom: 0,
+	width: 291, height: 47, bottom: 125,  
 	skin: checkoutSkin, variant: 0,
 	active: true, 
 	behavior: Behavior({
@@ -78,15 +109,18 @@ let CheckoutButton = Content.template($ => ({
 	})
 }));
 
+
 let CheckoutScreen = Line.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "checkout",
-	contents: [new BackArrow({ name: navHierarchy[0] })],
+	contents: [new BackArrow({ left: 20, name: navHierarchy[0] })],
 	
 }));
 
 let OverviewScreen = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
-	contents: [		
+	contents: [	
+		new CostOverview,
+		new CalorieOverview,	
 		new CheckoutButton
 	],
 }));
@@ -129,7 +163,7 @@ let CurrentScreen = Container.template($ => ({
 
 let AppContainer = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
-	skin: new Skin({fill: "white"}), active: true,
+	skin: whiteSkin, active: true,
 	contents: [
 		new CurrentScreen({ screen: $.screen }), 
 		new Header({ string: $.header }), 
@@ -175,7 +209,7 @@ let AppContainer = Container.template($ => ({
 	})
 }))
 
-let navHierarchy = ["1"]
+
 
 application.add(new AppContainer({ header: "A La Carte", screen: new OverviewScreen }));
 application.add(new Footer);

@@ -82,7 +82,7 @@ let FoodGroupLabels = Line.template($ => {
 		contents: [
 			new Label({left: 0, top: 0, height: 40}, null, percentageLabelStyle, $.percentage + "%"),
 			new Label({left: 10, right: 0, top: 0, height: 40}, null, foodGroupTitleLabelStyle, $.name.charAt(0).toLowerCase() + $.name.slice(1)),
-			new ForwardArrow({ name: "4" + $.name })
+			new ForwardArrow({top: 0, bottom: 0, name: "4" + $.name })
 		]
 	})
 });
