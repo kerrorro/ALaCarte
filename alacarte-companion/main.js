@@ -44,7 +44,7 @@ let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
 /***** PICTURES, TEXTURES, AND SKINS *****/
 let headerSkin = new Skin({ fill: "#5886E4"});
-let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png", behavior: Behavior({ onTouchEnded: function(pic){pic.focus()}})});
+let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
 let invalidTexture = new Texture("assets/invalidInputs.png");
 let invalidSkin = new Skin({ width: 328, height: 45, texture: invalidTexture, variants: 328 });
 let loginTexture = new Texture("assets/loginButton.png");
@@ -80,21 +80,21 @@ let itemInfo = {
 }
 
 /****** LOGIN SCREEN COMPONENTS ******/
-// Fade transition for the error message.
+// Fade transition for error and update content.
 var Fade = function() {
     Transition.call(this, 250);
 };
 Fade.prototype = Object.create(Transition.prototype, {
     onBegin: { value: 
-        function(feedbackCont, oldFeedback, newFeedback) {
-            feedbackCont.add(newFeedback);
+        function(container, oldContent, newContent) {
+            container.add(newContent);
             this.layer = new Layer;
-            this.layer.attach(newFeedback);
+            this.layer.attach(newContent);
         }
     },
     onEnd: { value: 
-        function(feedbackCont, oldFeedback, newFeedback) {
-            feedbackCont.remove(oldFeedback);
+        function(feedbackCont, oldContent, newContent) {
+            feedbackCont.remove(oldContent);
         }
     },
     onStep: { value: 
@@ -169,7 +169,7 @@ let InputField = Container.template($ => ({
                             label.container.hint.visible = (label.string.length == 0);
                         }
                         checkInfo(label, callback){
-                        	// Store info
+                        	// Storing user info
                         	if(label.container.name == "field1"){
                         		userNum = label.string;
                         		trace("USER NUM: "+userNum + '\n');
@@ -205,17 +205,6 @@ let InputField = Container.template($ => ({
 	                        		application.distribute(callback);
 	                       		}
                         		
-                        	}
-                        }
-                        saveInfo(label){
-                        	trace("\nSAVING INFO\n");
-                        	if(label.container.name == "field1"){
-                        		userNum = label.string;
-                        		trace("USER NUM: "+userNum + '\n');
-                        	}
-                        	if (label.container.name == "field2"){
-                        		userBudget = parseFloat(label.string);
-                        		trace("USER BUDGET: "+ userBudget + '\n');
                         	}
                         }
                     },
@@ -304,35 +293,44 @@ let priceDetailsCanvas = Canvas.template($ => ({
   })
 }));
 
+let priceDetails = Container.template($ => ({
+	top: 0, bottom: 0, left:0, right: 0,
+	contents: [
+		new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }),
+		new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
+	]   	 	
+}));
+
 let CostOverview = Container.template($ => ({
 	left: 0, right: 0, top: 0, height: 265,
 	contents: [
 		new priceDetailsCanvas($),
-		new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }),
-		new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
+		new priceDetails
 	],
 	behavior: Behavior({
 		onUpdate(container){
 			trace("updating cost overview \n");
-			container.remove(container.currentPrice);
-			container.insert(new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }), container.last);
-		}	
+			container.run(new Fade, container.last, new priceDetails);
+		},
+		                		
+   	 		
 	})
 	
 }));
 
+let CurrentCalorieContainer = Container.template($ => ({top: 10, left: 0, right: 0, contents: new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style })}));
+
 let CalorieOverview = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 20,
 	contents: [
-		new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }),
+		new CurrentCalorieContainer,
 		new Label({top: 0, string: "average calories", style: h2style }),
 		new Label({top: 0, string: "per serving", style: h3style })
 	],
 	behavior: Behavior({
 		onUpdate(container){
 			trace("updating calorie overview \n");
-			container.remove(container.calorieCount);
-			container.insert(new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }), container.first);
+			container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }) );
 		}	
 	})
 }));
