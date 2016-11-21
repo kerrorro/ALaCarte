@@ -297,13 +297,18 @@ export var itemSearchScreen = Container.template($ => ({    name: "search", lef
       new InputLine,
       new BottomContainer   ],
    behavior: Behavior({
+   		onCreate(container){
+   			userInput = [];
+   			container.scroller.itemList.empty();
+   			mapCircleCount = 0;
+   		},
    	  	printError(container, errorMsg){
 	   	  	var oldFeedback = container.feedbackCont.first;
 	   	  	container.feedbackCont.run(new Fade, oldFeedback, new FeedbackLine({ skin: feedbackSkin }));
-	   	  	// Waits 1 sec before calling onComplete to remove the error message
+	   	  	// Waits 1.5 sec before calling onComplete to remove the error message
 	   	  	container.wait(1500);
 	   	  	container.feedbackCont.last.add(new Label({ style: feedbackStyle, string: errorMsg}));
-   		  },
+   		},
    	 	onComplete(container){
    	  		// Removes the error after wait time
    	  		container.feedbackCont.run(new Fade, container.feedbackCont.first, new FeedbackLine({ skin: whiteSkin }));

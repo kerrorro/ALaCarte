@@ -1,9 +1,5 @@
-import {
-    CrossFade,
-    Push,
-    Flip,
-    TimeTravel
-} from 'transition';
+import { CrossFade, Push, Flip, TimeTravel } from 'transition';
+import { FieldScrollerBehavior, FieldLabelBehavior } from 'field';
 import { BackArrow, ForwardArrow, Header, Footer } from "navigation";
 import { priceScreen } from "price_breakdown";
 import { calorieScreen, calorieDetailsScreen } from "calorie_breakdown";
@@ -19,10 +15,12 @@ let navHierarchy = ["1"]
 /*** USER INPUT & DEVICE VARIABLES ***/
 var deviceURL = "";
 var userNum;
-var userBudget = 150;
-var currentPrice = 20;
+var userBudget;
+var currentPrice = 60;
 var currentCalories = "280";
 let grayColor = '#828282';
+var validResponse1 = false;
+var validResponse2 = false;
 
 
 /**** DEVICE DETECTION HANDLERS ****/
@@ -45,10 +43,22 @@ let h2style = new Style({ font: "30px Open Sans", color: grayColor });
 let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
 /***** PICTURES, TEXTURES, AND SKINS *****/
-let mainLogoImg = new Picture({ bottom: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
+let headerSkin = new Skin({ fill: "#5886E4"});
+let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png", behavior: Behavior({ onTouchEnded: function(pic){pic.focus()}})});
+let invalidTexture = new Texture("assets/invalidInputs.png");
+let invalidSkin = new Skin({ width: 328, height: 45, texture: invalidTexture, variants: 328 });
+let loginTexture = new Texture("assets/loginButton.png");
+let loginSkin = new Skin({ width: 328, height: 44, texture: loginTexture, variants: 328 });
 let checkoutTexture = new Texture("assets/checkoutButton.png");
 let checkoutSkin = new Skin({ width: 291, height: 47, texture: checkoutTexture, variants: 291 });
 let whiteSkin = new Skin({fill: "white"});
+let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: '#65779D', stroke: 'transparent' });
+let fieldStyle = new Style({ color: '#FFFFFF', font: 'bold 24px Open Sans', horizontal: 'middle',
+    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let fieldHintStyle = new Style({ color: "#E0E0E0", font: 'bold 15px Quicksand', horizontal: 'middle',
+    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#FFFFFF', '#acd473'] });
+
 
 
 /****** DATA ******/
@@ -69,12 +79,229 @@ let itemInfo = {
 	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
 }
 
+/****** LOGIN SCREEN COMPONENTS ******/
+// Fade transition for the error message.
+var Fade = function() {
+    Transition.call(this, 250);
+};
+Fade.prototype = Object.create(Transition.prototype, {
+    onBegin: { value: 
+        function(feedbackCont, oldFeedback, newFeedback) {
+            feedbackCont.add(newFeedback);
+            this.layer = new Layer;
+            this.layer.attach(newFeedback);
+        }
+    },
+    onEnd: { value: 
+        function(feedbackCont, oldFeedback, newFeedback) {
+            feedbackCont.remove(oldFeedback);
+        }
+    },
+    onStep: { value: 
+        function(fraction) {
+            this.layer.opacity = fraction;
+        }
+    },
+});
+
+let InvalidInput = Container.template($ => ({ width: 328, height: 45, skin: invalidSkin, variant: $.variant }));
+
+let FeedbackContainer = Container.template($ => ({
+	top: $.top, width: 328, height: 45, name: "feedbackContainer",
+	contents: [new Container({ left: 0, right: 0, top: 0, bottom: 0, skin: headerSkin })],
+	behavior: Behavior({
+		printError(container, variant){
+			container.run(new Fade, container.first, new InvalidInput({ variant: variant }));
+	   	  	// Waits 1.5 sec before calling onComplete to remove the error message
+	   	  	container.wait(1500);
+   		},
+   	 	onComplete(container){
+   	  		// Removes the error after wait time
+   	  		container.run(new Fade, container.first, new Container({ left: 0, right: 0, top: 0, bottom: 0, skin: headerSkin }));                    		
+   	 	},
+	})
+}));
+
+let LoginButton = Container.template($ => ({ 
+	top: $.top, width: 328, height: 44, variant: 0, 
+	skin: loginSkin, active: true,
+	behavior: Behavior({
+		onTouchBegan: function(button){
+			button.variant = 1;
+		},
+		onTouchEnded: function(button){
+			button.variant = 0;
+			button.container.distribute("checkInfo", "login");
+		},
+	})
+}));
+
+let BottomContainer = Column.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0, name: "bottomContainer", 
+	contents: [new FeedbackContainer({ top: 5 }), new InputContainer]
+}));
+
+let InputContainer = Column.template($ => ({
+	left: 20, right: 20, top: 5, bottom: 100, name: "inputContainer",
+	contents: [
+		new InputField({ name: "", field: "field1", hint: "CUSTOMER PHONE #" }),
+		new InputField({ name: "", field: "field2", hint: "TODAY'S BUDGET" }),
+		new LoginButton({ top: 10 })
+	]
+}));
+
+let InputField = Container.template($ => ({ 
+	left: 0, right: 0, top: 10, height: 45, name: $.name,
+    skin: nameInputSkin, contents: [
+        Scroller($, { 
+            left: 4, right: 4, top: 4, bottom: 4, active: true, name: $.field, 
+            Behavior: 
+            	FieldScrollerBehavior,clip: true, 
+            contents: [
+                Label($, { 
+                    top: 0, bottom: 0, skin: fieldLabelSkin, 
+                    style: fieldStyle, name: "field",
+                    editable: true, string: $.name,
+                    Behavior: class extends FieldLabelBehavior {
+                        onEdited(label) {
+                            let data = this.data;
+                            data.name = label.string;
+                            label.container.hint.visible = (label.string.length == 0);
+                        }
+                        checkInfo(label, callback){
+                        	// Store info
+                        	if(label.container.name == "field1"){
+                        		userNum = label.string;
+                        		trace("USER NUM: "+userNum + '\n');
+                        	}
+                        	if (label.container.name == "field2"){
+                        		userBudget = parseFloat(label.string);
+                        		trace("USER BUDGET: "+ userBudget + '\n');
+                        	}
+                        	
+                        	// Regex for phone number or price respectively
+                        	if (label.container.name == "field1") { validResponse1 = /^\d{10}$/g.test(label.string); }
+                        	if (label.container.name == "field2") { validResponse2 = /^\d+.?\d{0,2}$/g.test(label.string); }
+                        	
+                        	// ".distribute" will call for both fields. runResponse used to prevent duplicate calls
+                        	var runResponse;
+                        	label.container.name == "field2" ? runResponse = true : runResponse = false;
+                        	if (runResponse) {
+                        		var feedbackContainer = application.appContainer.currentScreen.loginScreen.bottomContainer.feedbackContainer;
+	                        	if (!validResponse1 || !validResponse2){
+	                        		if (!validResponse1 && !validResponse2){
+	                        			trace("both invalid \n");
+	                        			feedbackContainer.delegate("printError", 0);
+	                        		}
+	                        		else if (!validResponse1){
+	                        			trace("invalid number\n");
+	                        			feedbackContainer.delegate("printError", 1);
+	                        		} else {
+	                        			trace("invalid budget\n");
+	                        			feedbackContainer.delegate("printError", 2);
+	                        		}
+	                        	} else {
+	                        		trace("valid inputs \n");
+	                        		application.distribute(callback);
+	                       		}
+                        		
+                        	}
+                        }
+                        saveInfo(label){
+                        	trace("\nSAVING INFO\n");
+                        	if(label.container.name == "field1"){
+                        		userNum = label.string;
+                        		trace("USER NUM: "+userNum + '\n');
+                        	}
+                        	if (label.container.name == "field2"){
+                        		userBudget = parseFloat(label.string);
+                        		trace("USER BUDGET: "+ userBudget + '\n');
+                        	}
+                        }
+                    },
+                }),
+                Label($, {
+                    left: 2, right: 2, top: 2, bottom: 2, style: fieldHintStyle,
+                    string: $.hint , name: "hint"
+                }),
+            ]
+        })
+    ]
+}));
 
 let LoginScreen = Column.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0, active: true, skin: headerSkin, name: "loginScreen",
 	contents:[
 		mainLogoImg,
-		new Container({ left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "blue" }) })
-	]
+		new BottomContainer
+	],
+	behavior: Behavior({
+		onTouchEnded: function(container){
+			container.focus();
+		}
+	})
+}));
+
+
+/****** OVERVIEW SCREEN COMPONENTS ******/
+let priceDetailsCanvas = Canvas.template($ => ({
+  left: 0, right: 0, top: 10, bottom: 0,
+  behavior: Behavior({
+  	onCreate(canvas){
+  		this.percentage = $.percentage;
+  	},
+    onDisplaying(canvas) {
+     	this.onDraw(canvas)
+    },
+    onUpdate(canvas){
+   		trace("onUpdate \n");
+    	this.percentage = currentPrice * 100 / userBudget;
+    	this.onDraw(canvas);
+    },
+    onDraw(canvas){
+    	trace("drawing w/ " + this.percentage + "%\n");
+    	let yellow = "#FFAC8B";
+    	let gray = "#e0e0e0"
+		let total = (this.percentage / 100) * 2*Math.PI;
+		trace("TOTAL: " + total + "\n");
+      	let ctx = canvas.getContext("2d");
+      	ctx.lineWidth = 12;
+
+      	if ($.percentage > 25) {
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
+        	ctx.arc(188, 125, 75, 0, remaining);
+        	ctx.stroke();
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+        	ctx.stroke();
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = gray;
+        	ctx.arc(188, 125, 75, remaining, 1.5708*3);
+        	ctx.stroke();
+      	} else {
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+        	ctx.stroke();
+
+	        ctx.beginPath();
+    	    ctx.strokeStyle = gray;
+       		ctx.arc(188, 125, 75, 0, 1.5708*3);
+        	ctx.stroke();
+
+	        ctx.beginPath();
+    	    ctx.strokeStyle = gray;
+        	ctx.arc(188, 125, 75, total + (1.5708 * 3), 2*Math.PI);
+        	ctx.stroke();
+      	}
+    }
+  })
 }));
 
 let CostOverview = Container.template($ => ({
@@ -141,106 +368,12 @@ let CheckoutScreen = Line.template($ => ({
 let OverviewScreen = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
 	contents: [	
-		new CostOverview({percentage: 60 }),//new CostOverview({percentage: currentPrice * 100 / userBudget }),
+		new CostOverview({percentage: currentPrice * 100 / userBudget }),
 		new CalorieOverview,	
 		new CheckoutButton
 	]
 }));
-
-
-
-let priceDetailsCanvas = Canvas.template($ => ({
-  left: 0, right: 0, top: 10, bottom: 0,
-  behavior: Behavior({
-  	onCreate(canvas){
-  		this.percentage = $.percentage;
-  	},
-    onDisplaying(canvas) {
-     	this.onDraw(canvas)
-    },
-    onUpdate(canvas){
-   		let ctx = canvas.getContext("2d");
-   		trace("onUpdate \n");
-    //	ctx.clearRect(0, 0, canvas.width, canvas.height);
-    	this.percentage = currentPrice * 100 / userBudget;
-    	this.onDraw(canvas);
-    },
-    onDraw(canvas){
-    	trace("drawing w/ " + this.percentage + "%\n");
-    	let yellow = "#FFAC8B";
-    	let gray = "#e0e0e0"
-		let total = (this.percentage / 100) * 2*Math.PI;
-		trace("TOTAL: " + total + "\n");
-      	let ctx = canvas.getContext("2d");
-      	ctx.lineWidth = 12;
-
-      	if ($.percentage > 25) {
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
-        	trace("DRAWING REMAINING: " + remaining + "\n");
-        	ctx.arc(188, 125, 75, 0, remaining);
-        	ctx.stroke();
-
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
-        	ctx.stroke();
-
-        	ctx.beginPath();
-        	ctx.strokeStyle = gray;
-        	ctx.arc(188, 125, 75, remaining, 1.5708*3);
-        	ctx.stroke();
-      	} else {
-
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
-        	ctx.stroke();
-
-	        ctx.beginPath();
-    	    ctx.strokeStyle = gray;
-       		ctx.arc(188, 125, 75, 0, 1.5708*3);
-        	ctx.stroke();
-
-	        ctx.beginPath();
-    	    ctx.strokeStyle = gray;
-        	ctx.arc(188, 125, 75, total + (1.5708 * 3), 2*Math.PI);
-        	trace("DRAWING TOTAL: " + total + "\n");
-        	ctx.stroke();
-      	}
-    }
-  })
-}));
-
-/*
-let priceDetailsCanvasMainStyle = new Style({
-   color: grayColor, font: 'bold 40px', horizontal: "middle", vertical: 'middle',
-});
-let priceDetailsCanvasSubStyle = new Style({
-   color: grayColor, font: '20px', horizontal: "middle", vertical: 'middle',
-});
-
-
-let priceDetailsHeader = Container.template($ => ({
-	left: 0, right: 0, top: 0, height: 250,
-	contents: [
-		new priceDetailsCanvas($),
-        new Label({left: 0, right: 0, top: 0, bottom: 0}, null, priceDetailsCanvasMainStyle, $.total),
-        new Label({left: 50, right: 0, top: 60, bottom: 0}, null, priceDetailsCanvasSubStyle, "/ $150"),
-	]
-}))
-
-let OverviewScreen = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
-	contents: [
-		new priceDetailsHeader({percentage: "60", total: "$80.48"}),
-		new CheckoutButton
-	],
-}));*/
-
-
-
+
 application.behavior = Behavior({
 	onDisplayed(application) {
         application.discover("p3-device");
@@ -284,6 +417,11 @@ let AppContainer = Container.template($ => ({
 
 	],
 	behavior: Behavior({
+		login: function(container) {
+		  	var toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
+			application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
+			application.add(new Footer);
+		},
 		transitionToScreen: function(container, params) {
 			let toScreen;
 	    	switch(params.to){
@@ -324,9 +462,6 @@ let AppContainer = Container.template($ => ({
 	})
 
 }))
+
+application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 
-
-
-application.add(new AppContainer({ header: "A La Carte", screen: new OverviewScreen }));
-application.add(new Footer);
-application.skin = new Skin({fill: 'white'});
