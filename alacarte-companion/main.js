@@ -14,12 +14,15 @@ import Pins from "pins";
 let remotePins;
 let navHierarchy = ["1"]
 
+
+
 /*** USER INPUT & DEVICE VARIABLES ***/
 var deviceURL = "";
 var userNum;
-var userBudget;
-var currentPrice = "$80.48";
+var userBudget = 150;
+var currentPrice = 20;
 var currentCalories = "280";
+let grayColor = '#828282';
 
 
 /**** DEVICE DETECTION HANDLERS ****/
@@ -37,8 +40,8 @@ Handler.bind("/forget", Behavior({
 }));
 
 /***** STYLES *****/
-let h1style = new Style({ font: "bold 45px Open Sans", color: "#828282" });
-let h2style = new Style({ font: "30px Open Sans", color: "#828282" });
+let h1style = new Style({ font: "bold 45px Open Sans", color: grayColor });
+let h2style = new Style({ font: "30px Open Sans", color: grayColor });
 let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
 /***** PICTURES, TEXTURES, AND SKINS *****/
@@ -77,19 +80,34 @@ let LoginScreen = Column.template($ => ({
 let CostOverview = Container.template($ => ({
 	left: 0, right: 0, top: 0, height: 265,
 	contents: [
-		new Label({ top: 0, bottom: 0, string: currentPrice, style: h1style }),
-		new Label({ top: 50, bottom: 0, left: 75, right: 0, string: "/ " + userBudget, style: h3style })
-	]
+		new priceDetailsCanvas($),
+		new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }),
+		new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
+	],
+	behavior: Behavior({
+		onUpdate(container){
+			trace("updating cost overview \n");
+			container.remove(container.currentPrice);
+			container.insert(new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }), container.last);
+		}	
+	})
 	
 }));
+
 let CalorieOverview = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 20,
 	contents: [
-		new Label({ top: 10, string: currentCalories, style: h1style }),
+		new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }),
 		new Label({top: 0, string: "average calories", style: h2style }),
 		new Label({top: 0, string: "per serving", style: h3style })
-	]
-	
+	],
+	behavior: Behavior({
+		onUpdate(container){
+			trace("updating calorie overview \n");
+			container.remove(container.calorieCount);
+			container.insert(new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }), container.first);
+		}	
+	})
 }));
 
 
@@ -104,7 +122,12 @@ let CheckoutButton = Content.template($ => ({
 		},
 		onTouchEnded: function(button){
 			button.variant = 0;
-			application.first.delegate("transitionToScreen", { to: "checkout" });
+		//	application.first.delegate("transitionToScreen", { to: "checkout" });
+			
+			// testing onUpdate for overview screen
+			currentPrice = 80.48;
+			currentCalories = "300";
+			application.distribute("onUpdate");
 		}
 	})
 }));
@@ -119,11 +142,102 @@ let CheckoutScreen = Line.template($ => ({
 let OverviewScreen = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
 	contents: [	
-		new CostOverview,
+		new CostOverview({percentage: currentPrice * 100 / userBudget }),
 		new CalorieOverview,	
 		new CheckoutButton
-	],
+	]
 }));
+
+
+
+let priceDetailsCanvas = Canvas.template($ => ({
+  left: 0, right: 0, top: 10, bottom: 0,
+  behavior: Behavior({
+  	onCreate(canvas){
+  		this.percentage = $.percentage;
+  	},
+    onDisplaying(canvas) {
+     	this.onDraw(canvas)
+    },
+    onUpdate(canvas){
+   		let ctx = canvas.getContext("2d");
+   		trace("onUpdate \n");
+    //	ctx.clearRect(0, 0, canvas.width, canvas.height);
+    	this.percentage = currentPrice * 100 / userBudget;
+    	this.onDraw(canvas);
+    },
+    onDraw(canvas){
+    	trace("drawing w/ " + this.percentage + "%\n");
+    	let yellow = "#FFAC8B";
+    	let gray = "#e0e0e0"		let total = (this.percentage / 100) * 2*Math.PI;
+		trace("TOTAL: " + total + "\n");
+      	let ctx = canvas.getContext("2d");
+      	ctx.lineWidth = 12;
+
+      	if ($.percentage > 25) {
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
+        	trace("DRAWING REMAINING: " + remaining + "\n");
+        	ctx.arc(188, 125, 75, 0, remaining);
+        	ctx.stroke();
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+        	ctx.stroke();
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = gray;
+        	ctx.arc(188, 125, 75, remaining, 1.5708*3);
+        	ctx.stroke();
+      	} else {
+
+        	ctx.beginPath();
+        	ctx.strokeStyle = yellow;
+        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+        	ctx.stroke();
+
+	        ctx.beginPath();
+    	    ctx.strokeStyle = gray;
+       		ctx.arc(188, 125, 75, 0, 1.5708*3);
+        	ctx.stroke();
+
+	        ctx.beginPath();
+    	    ctx.strokeStyle = gray;
+        	ctx.arc(188, 125, 75, total + (1.5708 * 3), 2*Math.PI);
+        	trace("DRAWING TOTAL: " + total + "\n");
+        	ctx.stroke();
+      	}
+    }
+  })
+}));
+
+/*
+let priceDetailsCanvasMainStyle = new Style({
+   color: grayColor, font: 'bold 40px', horizontal: "middle", vertical: 'middle',
+});
+let priceDetailsCanvasSubStyle = new Style({
+   color: grayColor, font: '20px', horizontal: "middle", vertical: 'middle',
+});
+
+
+let priceDetailsHeader = Container.template($ => ({
+	left: 0, right: 0, top: 0, height: 250,
+	contents: [
+		new priceDetailsCanvas($),
+        new Label({left: 0, right: 0, top: 0, bottom: 0}, null, priceDetailsCanvasMainStyle, $.total),
+        new Label({left: 50, right: 0, top: 60, bottom: 0}, null, priceDetailsCanvasSubStyle, "/ $150"),
+	]
+}))
+
+let OverviewScreen = Column.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
+	contents: [
+		new priceDetailsHeader({percentage: "60", total: "$80.48"}),
+		new CheckoutButton
+	],
+}));*/
 
 
 
@@ -143,9 +257,9 @@ application.behavior = Behavior({
                     application.distribute("onListening");
                     remotePins.repeat("/cartData/read", 1000, result => {
           				trace("COMPANION: " + result + "\n");
-			        }); 
+			        });
                 }
-            }, 
+            },
             connectionDesc => {
                 if (connectionDesc.name == "pins-share") {
                     trace("Disconnected from remote pins\n");
@@ -184,7 +298,7 @@ let AppContainer = Container.template($ => ({
 	    			break;
 	    		case "nutritionDetails":
 	    			navHierarchy.unshift("5");
-		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type}), itemInfo: itemInfo, cartData: cartData });
+		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type, percentage: params.percentage}), itemInfo: itemInfo, cartData: cartData });
 		    		break;
 	    		case "search":
 	    			navHierarchy.unshift("6");
@@ -197,7 +311,8 @@ let AppContainer = Container.template($ => ({
 	    		default: // Default is transition to OverviewScreen (triggered when pressing back button)
 	    			navHierarchy.unshift("1");
 	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
-	    	}	
+	    	}
+	
 	    	// Runs transition on AppContainer (which contains Header and CurrentScreen)
 	    	var prevScreenNum = navHierarchy.pop();
 	    	var currentScreenNum = navHierarchy[0];
@@ -206,10 +321,12 @@ let AppContainer = Container.template($ => ({
 	    	currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
 	    	container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
 		}
-	})
+	})
+
 }))
 
 
 
 application.add(new AppContainer({ header: "A La Carte", screen: new OverviewScreen }));
 application.add(new Footer);
+application.skin = new Skin({fill: 'white'});
