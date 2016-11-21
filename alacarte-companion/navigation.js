@@ -44,18 +44,21 @@ let arrowBehavior = Behavior({
 		arrow.variant = 1;
 		var toScreen;
 		var type;
+		var percentage;
 		switch(arrow.name.charAt(0)){
 			case "2": 	// checkout screen --> overview screen
 				toScreen = "overview";
 				break;
 			case "4":		// nutrition screen --> corresponding nutritionDetails screen
-				toScreen = "nutritionDetails"
-				type = arrow.name.slice(1);
+				toScreen = "nutritionDetails";
+				var inputArray = arrow.name.slice(1).split("%");
+				type = inputArray[0];
+				percentage = inputArray[1];
 				break;
 			case "5":		// nutritionDetails screen --> nutrition screen
 				toScreen = "nutrition"
 		}
-		application.first.delegate("transitionToScreen", { to: toScreen, type: type });
+		application.first.delegate("transitionToScreen", { to: toScreen, type: type, percentage: percentage });
 	}
 })
 

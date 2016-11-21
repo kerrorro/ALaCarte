@@ -250,13 +250,20 @@ let priceDetailsCanvas = Canvas.template($ => ({
     onDraw(canvas){
     	trace("drawing w/ " + this.percentage + "%\n");
     	let yellow = "#FFAC8B";
-    	let gray = "#e0e0e0"
+    	let red = "#E94363";
+    	let gray = "#e0e0e0";
 		let total = (this.percentage / 100) * 2*Math.PI;
 		trace("TOTAL: " + total + "\n");
       	let ctx = canvas.getContext("2d");
       	ctx.lineWidth = 12;
 
-      	if ($.percentage > 25) {
+		if (this.percentage >= 100) {
+			ctx.beginPath();
+        	ctx.strokeStyle = red;
+			ctx.arc(188,125,75,0,2*Math.PI);
+			ctx.stroke();
+		}
+      	else if (this.percentage > 25) {
         	ctx.beginPath();
         	ctx.strokeStyle = yellow;
         	let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
