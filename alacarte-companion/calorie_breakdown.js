@@ -208,7 +208,7 @@ let calorieDetailsCanvas = Canvas.template($ => ({
       let ctx = canvas.getContext("2d");
       ctx.lineWidth = 8;
 
-      if ($.percentage > 25) {
+      if ($.percentage >= 25) {
         ctx.beginPath();
         ctx.strokeStyle = yellow;
         let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
