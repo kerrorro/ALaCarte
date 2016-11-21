@@ -34,9 +34,6 @@ let totalpriceStyle = new Style({
 	color: "#FFAC8B", font: 'bold 35px Open Sans', horizontal: 'left', vertical: 'middle', 
 });
 
-
-
-
 // color skins
 var blueSkin = new Skin({ fill:"#5886E4" });
 var peachSkin = new Skin({ fill: "#FFAC8B"});
@@ -47,60 +44,64 @@ var yellowSkin = new Skin({ fill: "#FFC273"});
 var blackSkin = new Skin({fill: "#828282"});
 let darkGraySkin = new Skin({ fill: "#202020" });
 let whiteSkin = new Skin({fill: "white"});
-
-
-export var priceScreen = Container.template($ => ({    left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }),    contents: [
-   			   			VerticalScroller($, { active: true, top: 15, bottom: 90, left: 0, right: 0, contents:[				new contentToScrollVertically,                VerticalScrollbar(),                 TopScrollerShadow(),                 BottomScrollerShadow(),   			]}),
-   			
-   			
-   			
- 
-   			
-   			new topContainer({skin: whiteSkin}),
-   			
- 
-   			
-   			new bottomContainer({skin: whiteSkin})            ]}));
+export var priceScreen = Container.template($ => {
+	
+	var scrollContents = [];
+	var subtotal = 0;
+    for (var itemID of $.cartData.items) {
+    	let info = $.itemInfo[itemID];
+    	subtotal += info.price
+    	scrollContents.push(new itemPriceLine({skin: blueSkin, name: info.name, price: "$" + info.price.toFixed(2)}));
+    	scrollContents.push(new seperateLine());
+    }
+    
+    let tax = subtotal * 0.09;
+    let total = subtotal + tax;
+	
+	return({ 	   left: 0, right: 0, top: 0, bottom: 0, skin: new Skin({ fill: "white" }), 	   contents: [
+	   				   			VerticalScroller($, { active: true, top: 15, bottom: 245, left: 0, right: 0, contents:[					new contentToScrollVertically({contents: scrollContents}),	                VerticalScrollbar(), 	                TopScrollerShadow(), 	                BottomScrollerShadow(),	   			]}),
+	   			
+	   			new topContainer({skin: whiteSkin}),
+	   			
+	   			new bottomContainer({skin: whiteSkin, subtotal: subtotal, tax: tax, total: total})         	   ]
+	  })});
 
 
 
 let bottomContainerLine = Line.template($ => ({
 	left: 0, top: 0, right: 0, bottom: 0,
 	contents: [
-
 		new Label({ left: 155, right: 0, top: 0, bottom: 0, string: $.name, style: checkoutStyle}),
-		new Label({ right: 45, top: 0, bottom: 0,  width: 80, string: $.amount, style: checkoutpriceStyle}),
+		new Label({ right: 45, top: 0, bottom: 0,  width: 80, string: "$" + $.amount.toFixed(2), style: checkoutpriceStyle}),
 	]
 }));
 
 let taxContainerLine = Line.template($ => ({
 	left: 0, top: 0, right: 0, bottom: 0,
 	contents: [
-
 		new Label({ left: 190, right: 0, top: 0, bottom: 0, string: $.name, style: checkoutStyle}),
-		new Label({ right: 45, top: 0, bottom: 0,  width: 80, string: $.amount, style: checkoutpriceStyle}),
+		new Label({ right: 45, top: 0, bottom: 0,  width: 80, string: "$" + $.amount.toFixed(2), style: checkoutpriceStyle}),
 	]
 }));
 
 let totalContainerLine = Line.template($ => ({
 	left: 0, top: 0, right: 0, bottom: 0,
 	contents: [
-
 		new Label({ left: 155, right: 0, top: 0, bottom: 0, string: $.name, style: checkoutStyle}),
-		new Label({ right: 45, top: 0, bottom: 0,  width: 110, string: $.amount, style: totalpriceStyle}),
+		new Label({ right: 45, top: 0, bottom: 0,  width: 110, string: "$" + $.amount.toFixed(2), style: totalpriceStyle}),
 	]
 }));
 
 // dummy container
-var topContainer = Column.template($ => ({     left: 0, right: 0, top: 0, height: 15,    skin: $.skin, contents: [
-
+var topContainer = Column.template($ => ({     left: 0, right: 0, top: 0, height: 15,    skin: $.skin, 
+    contents: [
     ]}));
 
 
 var bottomContainer = Column.template($ => ({     left: 0, right: 0, top: 350, bottom: 74,     skin: $.skin, contents: [
-    	new bottomContainerLine({name: "Subtotal", amount: "$12.20"}),
-    	new taxContainerLine({name: "Tax", amount: "$1.22"}),
-    	new totalContainerLine({name: "Total", amount: "$13.42"}),
+    	new bottomContainerLine({name: "Subtotal", amount: $.subtotal}),
+    	new taxContainerLine({name: "Tax", amount: $.tax}),
+    	new totalContainerLine({name: "Total", amount: $.total}),
     ]}));
 
 let itemPriceLine = Line.template($ => ({
@@ -116,14 +117,7 @@ let itemPriceLine = Line.template($ => ({
 let seperateLine = Container.template($ => ({
 	width:344, left:15, height: 1, skin: blackSkin,
 }));
-var contentToScrollVertically = Column.template($ => ({    top: 0, left: 0, right: 0,     contents: [
-    	new itemPriceLine({skin:blueSkin ,name: "Banana", price: "$0.10"}),
-    	new seperateLine(),
-    	new itemPriceLine({skin:peachSkin ,name: "Chocolate Chip Cookies", price: "$2.10"}),
-		new seperateLine(),
-    	new itemPriceLine({skin:redSkin ,name: "Whole Wheat Bread", price: "$4.50"}),
-    	new seperateLine(),
-    	new itemPriceLine({skin:lightblueSkin ,name: "Ground Beef", price: "$5.00"}),
-    	new seperateLine(),
-    	new itemPriceLine({skin:purpleSkin ,name: "Apple", price: "$0.50"}),
-    ]}));var scrollerExample = new priceScreen({ contentToScrollVertically });
+var contentToScrollVertically = Column.template($ => {
+    return({
+    	top: 0, left: 0, right: 0, 	    contents: $.contents
+	});});

@@ -35,25 +35,20 @@ Handler.bind("/forget", Behavior({
 
 // Hardwire Data For Now
 let cartData = {
-	items: [0, 1, 2, 3, 4, 5], // array of item ids; use itemInfo dictionary for more info
+	items: [0, 1, 2, 3, 4, 5, 1, 1, 2], // array of item ids; use itemInfo dictionary for more info
 	location: "Unsure what to put here -- Caroline might know better"
 }
 
 // item id -> nutitional info
 // add more info as needed
 let itemInfo = {
-	0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit" },
-	1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies" },
-	2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread" },
-	3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef" },
-	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
-	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk" },
+	0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit", price: 0.10 },
+	1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies", price: 2.99 },
+	2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread", price: 3.99 },
+	3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef", price: 5.00 },
+	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit", price: 0.50 },
+	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
 }
-
-
-
-
-
 
 let CostOverview = Content.template($ => ({}));
 let CalorieOverview = Content.template($ => ({}));
@@ -206,7 +201,7 @@ let AppContainer = Container.template($ => ({
 	    	switch(params.to){
 	    		case "cost":
 	    			navHierarchy.unshift("3");
-	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen, itemInfo: itemInfo, cartData: cartData });
+	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo, cartData}), itemInfo: itemInfo, cartData: cartData });
 	    			toScreen.name = "cost";
 	    			break;
 	    		case "nutrition":
