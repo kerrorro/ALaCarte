@@ -1,20 +1,28 @@
 var TRANSITIONS = require("transitions");
 var cartPin = require("simulator/bll");
 import Pins from "pins";
-var currentScreen;
 let myPins;
-let itemInfo = {
-  0: "Banana",
-  1: "Chocolate Chip Cookies",
-  2: "Whole Wheat Bread",
-  3: "Ground Beef",
-  4: "Apple"
-}
 
+// Cart items stored as their "RFID" values to be polled for by the companion app
+let cartContents = []
+
+// Associates input item to its item ID/"RFID"
+let itemRFIDs = {
+	"banana": 0,
+	"chocolate chip cookies": 1,
+	"whole wheat bread": 2,
+	"ground beef": 3,
+	"apple": 4,
+	"milk": 5,
+}		
+		
+		
+/*********** ASSETS *************/
 let logoUrl = "assets/logo.png";
 let readyUrl = "assets/ready.png";
 let errorUrl = "assets/error.png";
 let abzFont = new Style({ font: "24px ABeeZee", color: "white" });
+let cartItemsFont = new Style({ font: "16px ABeeZee", color: "white" });
 let logo = new Picture({ height: 106, top: 0, bottom: 30, url: "assets/logo.png" });
 let connectionError = new Picture({ height: 19, top:100, bottom: 0, url: "assets/error.png" });
 let pinsReady = new Picture({ height: 25, top: 100, bottom: 0, url: "assets/ready.png" });
@@ -33,41 +41,126 @@ let StringContainer = Container.template($ => ({
   top: 50, bottom: 0,
   contents: [Label($, {style: abzFont, string: $.string})]
 }));
-/*
-let MainContainer = Column.template($ => ({
-top: 0, bottom: 0, left: 0, right: 0,
-skin: new Skin({ fill: $.backgroundColor }),
-contents: $.content
-}));*/
-/************************************/
-/***********   HANDLERS   ***********/
-/***********************************/
+var twoColorSkin = new Skin({ fill: ['#FFAC8B', '#FA8354'], });
+var labelStyle = new Style({ color: 'white', font: '20px', horizontal: 'null', vertical: 'null' });
 
+/*********** BEHAVIORS AND TRANSITIONS ******************/
+// Writes RFIDs associated with selected item to BLL
+var ButtonContainerBehavior = Behavior({
+	onTouchBegan: function(container, id, x, y, ticks) {
+    	container.state = 1;
+    },
+    onTouchEnded: function(container, id, x, y, ticks) {
+    	container.state = 0;
+    	// Read pin (radio group) item input
+    	Pins.invoke("/itemData/read", function(result){
+    		if(itemRFIDs[result] != undefined){
+    			cartContents.push(itemRFIDs[result]);
+    			// Write RFID of item input to cart data pin for polling from companion app
+    			Pins.invoke("/cartData/write", JSON.stringify(cartContents));
+    			application.distribute("onItemAdded", result);
+    		}
+		})
 
-let AnimationContainer = Container.template($ => ({
-  left: 0, right: 0, top: 0, bottom: 0, name: $.name,
-  skin: new Skin({ fill: "white" }),
-  contents: [new FoodTitle({ string: $.name })]
+    }
+})
+var Fade = function() {
+    Transition.call(this, 250);
+};
+Fade.prototype = Object.create(Transition.prototype, {
+    onBegin: { value: 
+        function(container, oldContent, newContent) {
+            container.add(newContent);
+            this.layer = new Layer;
+            this.layer.attach(newContent);
+        }
+    },
+    onEnd: { value: 
+        function(feedbackCont, oldContent, newContent) {
+        	this.layer.detach(newContent);
+            feedbackCont.remove(oldContent);
+            if (newContent.name == "blank"){
+            	newContent.skin = new Skin({fill: "transparent" });
+            }
+        }
+    },
+    onStep: { value: 
+        function(fraction) {
+            this.layer.opacity = fraction;
+        }
+    },
+});
+
+/***************** CONTAINERS ********************/
+var CartItemsContainer = Container.template($ => ({
+	left: 0, right: 0, bottom: 0, height: 120, name: "cartItems", skin: new Skin({fill: "transparent"}), active: true, 
+	contents: [
+		new Text({ left: 0, right: 0, bottom: 3, top: 3, string: "", style: cartItemsFont})
+	],
+	behavior: Behavior({
+		onItemAdded(container, item){
+			if(cartContents.length == 1){
+				container.skin = new Skin({fill: "#5886E4"});
+				container.first.string += item;
+			} else {
+				container.first.string += ", " + item; 
+			}
+			
+		}
+	})
 }))
 
-let FoodTitle = Container.template($ => ({
-  left: 0, right: 0, top: 0, height: 45,
-  skin: new Skin({ fill: "#B3FFFFFF" }),
-  contents: [new Label({ style: abzFont, string: $.string })]
+var ButtonContainer = Container.template($ => ({ 
+    left: 0, right: 0, top: 0, height: 100, name: "button",
+    contents: [
+        Container($, { width: 180, height: 40, active: true, skin: twoColorSkin, name: 'button', 
+            behavior: ButtonContainerBehavior, 
+            contents: [
+                Label($, { left: 0, right: 0, top: 0, bottom: 0, style: abzFont, 
+                string: 'Add item', }),
+            ]
+        })
+    ]
+}));
+
+var AddedItemContainer = Container.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0, skin: $.skin, name: $.name, 
+	contents: [ new Label({string: $.string, style: abzFont}) ]
 }))
+
+var TransitionContainer = Container.template($ => ({
+	left: 0, right: 0, top: 80, height: 40, name: "transitionCont", 
+	contents: [
+		new AddedItemContainer($)
+	],
+	behavior: Behavior({
+		onItemAdded(container, item){
+			container.run(new Fade, container.last, new AddedItemContainer({name: "addedItem", string: "Added " + item, skin: new Skin({fill: "#5886E4"})}));
+			container.wait(1500);  // Runs onComplete transition after wait time	  
+   		},
+   	 	onComplete(container){
+   	  		// Removes the message after wait time
+   	  		container.run(new Fade, container.last, new AddedItemContainer({name: "blank", skin: new Skin({fill: "white"}),string: "" }));
+   	 	},
+	})
+}))
+
+
 
 /* Default screen if pin connection successful */
 var currentScreen = new Container({
-  top: 0, bottom: 0, left: 0, right: 0,
+  top: 0, bottom: 0, left: 0, right: 0, name: currentScreen,
   skin: new Skin({ fill: "white" }),
   contents: [
-    new AnimationContainer({ name: "" }),
-    //new FoodTitle,
-    new Picture({ height: 25, top: 75, url: readyUrl }),
+    new ButtonContainer,
+    new Picture({ height: 25, top: 90, url: readyUrl }),
+    new TransitionContainer({name: "blank", string: ""}),
     new Picture({ height: 106, bottom: 10, url: logoUrl }),
+    new CartItemsContainer
 
   ]
 });
+
 
 class AppBehavior extends Behavior {
   onQuit(application) {
@@ -76,27 +169,18 @@ class AppBehavior extends Behavior {
   onLaunch(application) {
     application.shared = true;
     Pins.configure({
-
-      cartData: {
-        require: "bll",
-        pins: {
-          // Specify the pins required by this BLL
-        }
+    	itemData: {
+    		require: "rfid",
+    		pins: {}
+    	},
+      	cartData: {
+       		require: "bll",
+        	pins: {}
       },
 
     }, success => {
       if (success) {
-        var foodColumn = new Column({ left: 0, right: 0, top: 0, bottom: 0 })
-        application.add(foodColumn);
-        for (var item in itemInfo){
-          foodColumn.add(new Label({top: 20, style: abzFont, string: itemInfo[item] }));
-        }
-
-        Pins.invoke("/cartData/write", JSON.stringify(itemInfo));
-        Pins.repeat("/cartData/read", 1000, result => {
-          trace("DEVICE: " + result + "\n");
-        });
-
+        application.add(currentScreen);
         Pins.share("ws", {zeroconf: true, name: "pins-share-alacarte"});
       } else {
         currentScreen = new MainContainer({

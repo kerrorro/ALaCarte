@@ -16,7 +16,7 @@ let navHierarchy = ["1"]
 var deviceURL = "";
 var userNum;
 var userBudget;
-var currentPrice = 60;
+var currentPrice = 28.17;
 var currentCalories = "280";
 let grayColor = '#828282';
 var validResponse1 = false;
@@ -43,6 +43,7 @@ let h2style = new Style({ font: "30px Open Sans", color: grayColor });
 let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
 /***** PICTURES, TEXTURES, AND SKINS *****/
+let tempCheckoutImg = new Picture({ width: 223, height: 336, url: "assets/tempCheckoutScreen.png"})
 let headerSkin = new Skin({ fill: "#5886E4"});
 let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
 let invalidTexture = new Texture("assets/invalidInputs.png");
@@ -181,7 +182,7 @@ let InputField = Container.template($ => ({
                         	
                         	// Regex for phone number or price respectively
                         	if (label.container.name == "field1") { validResponse1 = /^\d{10}$/g.test(label.string); }
-                        	if (label.container.name == "field2") { validResponse2 = /^\d+.?\d{0,2}$/g.test(label.string); }
+                        	if (label.container.name == "field2") { validResponse2 = /^\d+.?\d{0,2}$/g.test(label.string) && label.string != "0"; }
                         	
                         	// ".distribute" will call for both fields. runResponse used to prevent duplicate calls
                         	var runResponse;
@@ -353,21 +354,20 @@ let CheckoutButton = Content.template($ => ({
 		},
 		onTouchEnded: function(button){
 			button.variant = 0;
-		//	application.first.delegate("transitionToScreen", { to: "checkout" });
-			
+			application.first.delegate("transitionToScreen", { to: "checkout" });
+			/*
 			// testing onUpdate for overview screen
 			currentPrice = 80.48;
 			currentCalories = "300";
-			application.distribute("onUpdate");
+			application.distribute("onUpdate");*/
 		}
 	})
 }));
 
 
-let CheckoutScreen = Line.template($ => ({
+let CheckoutScreen = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "checkout",
-	contents: [new BackArrow({ left: 20, name: navHierarchy[0] })],
-	
+	contents: [new BackArrow({ left: 20, name: navHierarchy[0] }), tempCheckoutImg],
 }));
 
 let OverviewScreen = Column.template($ => ({
@@ -381,10 +381,10 @@ let OverviewScreen = Column.template($ => ({
 
 application.behavior = Behavior({
 	onDisplayed(application) {
-        application.discover("p3-device");
+        application.discover("alacarte-device");
     },
     onQuit(application) {
-        application.forget("p3-device");
+        application.forget("alacarte-device");
     }, 
     onLaunch(application) {
         let discoveryInstance = Pins.discover(
@@ -393,9 +393,6 @@ application.behavior = Behavior({
                     trace("Connecting to remote pins\n");
                     remotePins = Pins.connect(connectionDesc);
                     application.distribute("onListening");
-                    remotePins.repeat("/cartData/read", 1000, result => {
-          				trace("COMPANION: " + result + "\n");
-			        });
                 }
             },
             connectionDesc => {
@@ -406,6 +403,11 @@ application.behavior = Behavior({
             }
         );
     },
+    onListening(application){
+    	remotePins.repeat("/cartData/read", 1000, result => {
+          	trace("COMPANION: " + result + "\n");
+		});
+    }
 })
 
 let CurrentScreen = Container.template($ => ({
