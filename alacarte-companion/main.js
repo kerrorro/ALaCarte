@@ -22,19 +22,27 @@ let grayColor = '#828282';
 var validResponse1 = false;
 var validResponse2 = false;
 
+/*
+var currentPrice = 0;
+for (var itemID of cartData.items) {
+  currentPrice += itemInfo[itemID].price;
+}
+currentPrice += currentPrice * 0.09;
+*/
+
 
 /**** DEVICE DETECTION HANDLERS ****/
 Handler.bind("/discover", Behavior({
-    onInvoke: function(handler, message){
-    	trace("Device connected\n");
-        deviceURL = JSON.parse(message.requestText).url;
-    }
+  onInvoke: function(handler, message){
+    trace("Device connected\n");
+    deviceURL = JSON.parse(message.requestText).url;
+  }
 }));
 
 Handler.bind("/forget", Behavior({
-    onInvoke: function(handler, message){
-        deviceURL = "";
-    }
+  onInvoke: function(handler, message){
+    deviceURL = "";
+  }
 }));
 
 /***** STYLES *****/
@@ -42,8 +50,9 @@ let h1style = new Style({ font: "bold 45px Open Sans", color: grayColor });
 let h2style = new Style({ font: "30px Open Sans", color: grayColor });
 let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
-/***** PICTURES, TEXTURES, AND SKINS *****/
+
 let tempCheckoutImg = new Picture({ width: 223, height: 336, url: "assets/tempCheckoutScreen.png"})
+/***** PICTURES, TEXTURES, AND SKINS *****/
 let headerSkin = new Skin({ fill: "#5886E4"});
 let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
 let invalidTexture = new Texture("assets/invalidInputs.png");
@@ -55,9 +64,9 @@ let checkoutSkin = new Skin({ width: 291, height: 47, texture: checkoutTexture, 
 let whiteSkin = new Skin({fill: "white"});
 let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: '#65779D', stroke: 'transparent' });
 let fieldStyle = new Style({ color: '#FFFFFF', font: 'bold 24px Open Sans', horizontal: 'middle',
-    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+  vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldHintStyle = new Style({ color: "#E0E0E0", font: 'bold 15px Quicksand', horizontal: 'middle',
-    vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+  vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#FFFFFF', '#acd473'] });
 
 
@@ -65,19 +74,19 @@ let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#FFFFFF', 
 /****** DATA ******/
 // Hardwire Data For Now
 let cartData = {
-	items: [0, 1, 2, 3, 4, 5, 1, 1, 2], // array of item ids; use itemInfo dictionary for more info
-	location: "Unsure what to put here -- Caroline might know better"
+  items: [0, 1, 2, 3, 4, 5, 1, 1, 2], // array of item ids; use itemInfo dictionary for more info
+  location: "Unsure what to put here -- Caroline might know better"
 }
 
 // item id -> nutitional info
 // add more info as needed
 let itemInfo = {
-	0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit", price: 0.10 },
-	1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies", price: 2.99 },
-	2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread", price: 3.99 },
-	3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef", price: 5.00 },
-	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit", price: 0.50 },
-	5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
+  0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit", price: 0.10 },
+  1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies", price: 2.99 },
+  2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread", price: 3.99 },
+  3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef", price: 5.00 },
+  4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit", price: 0.50 },
+  5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
 }
 
 /****** LOGIN SCREEN COMPONENTS ******/
@@ -235,112 +244,111 @@ let LoginScreen = Column.template($ => ({
 
 /****** OVERVIEW SCREEN COMPONENTS ******/
 let priceDetailsCanvas = Canvas.template($ => ({
-  left: 0, right: 0, top: 10, bottom: 0,
-  behavior: Behavior({
-  	onCreate(canvas){
-  		this.percentage = $.percentage;
-  	},
-    onDisplaying(canvas) {
-     	this.onDraw(canvas)
-    },
-    onUpdate(canvas){
-   		trace("onUpdate \n");
-    	this.percentage = currentPrice * 100 / userBudget;
-    	this.onDraw(canvas);
-    },
-    onDraw(canvas){
-    	trace("drawing w/ " + this.percentage + "%\n");
-    	let yellow = "#FFAC8B";
-    	let red = "#E94363";
-    	let gray = "#e0e0e0";
-		let total = (this.percentage / 100) * 2*Math.PI;
-		trace("TOTAL: " + total + "\n");
-      	let ctx = canvas.getContext("2d");
-      	ctx.lineWidth = 12;
+	left: 0, right: 0, top: 10, bottom: 0,	behavior: Behavior({
+		onCreate(canvas){
+    		this.percentage = $.percentage;
+  		},
+  		onDisplaying(canvas) {
+    		this.onDraw(canvas)
+  		},
+  		onUpdate(canvas){
+    		trace("onUpdate \n");
+    		this.percentage = currentPrice * 100 / userBudget;
+    		this.onDraw(canvas);
+  		},
+  		onDraw(canvas){
+    		trace("drawing w/ " + this.percentage + "%\n");
+    		let yellow = "#FFAC8B";
+    		let red = "#E94363";
+    		let gray = "#e0e0e0";
+    		let total = (this.percentage / 100) * 2*Math.PI;
+   			trace("TOTAL: " + total + "\n");
+  			let ctx = canvas.getContext("2d");
+    		ctx.lineWidth = 12;
 
-		if (this.percentage >= 100) {
-			ctx.beginPath();
-        	ctx.strokeStyle = red;
-			ctx.arc(188,125,75,0,2*Math.PI);
-			ctx.stroke();
-		}
-      	else if (this.percentage > 25) {
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
-        	ctx.arc(188, 125, 75, 0, remaining);
-        	ctx.stroke();
+    		if (this.percentage >= 100) {
+      			ctx.beginPath();
+     			ctx.strokeStyle = red;
+      			ctx.arc(188,125,75,0,2*Math.PI);
+      			ctx.stroke();
+    		}
+    		else if (this.percentage > 25) {
+      			ctx.beginPath();
+      			ctx.strokeStyle = yellow;
+      			let remaining = ((this.percentage - 25) / 100) * 2*Math.PI;
+      			ctx.arc(188, 125, 75, 0, remaining);
+     			ctx.stroke();
 
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
-        	ctx.stroke();
+      			ctx.beginPath();
+      			ctx.strokeStyle = yellow;
+      			ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+      			ctx.stroke();
 
-        	ctx.beginPath();
-        	ctx.strokeStyle = gray;
-        	ctx.arc(188, 125, 75, remaining, 1.5708*3);
-        	ctx.stroke();
-      	} else {
+      			ctx.beginPath();
+      			ctx.strokeStyle = gray;
+      			ctx.arc(188, 125, 75, remaining, 1.5708*3);
+      			ctx.stroke();
+    		} else {
 
-        	ctx.beginPath();
-        	ctx.strokeStyle = yellow;
-        	ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
-        	ctx.stroke();
+      			ctx.beginPath();
+     			ctx.strokeStyle = yellow;
+      			ctx.arc(188, 125, 75, 1.5708*3, total + (1.5708 * 3));
+      			ctx.stroke();
 
-	        ctx.beginPath();
-    	    ctx.strokeStyle = gray;
-       		ctx.arc(188, 125, 75, 0, 1.5708*3);
-        	ctx.stroke();
+      			ctx.beginPath();
+      			ctx.strokeStyle = gray;
+      			ctx.arc(188, 125, 75, 0, 1.5708*3);
+      			ctx.stroke();
 
-	        ctx.beginPath();
-    	    ctx.strokeStyle = gray;
-        	ctx.arc(188, 125, 75, total + (1.5708 * 3), 2*Math.PI);
-        	ctx.stroke();
-      	}
-    }
-  })
+      			ctx.beginPath();
+      			ctx.strokeStyle = gray;
+      			ctx.arc(188, 125, 75, total + (1.5708 * 3), 2*Math.PI);
+     			ctx.stroke();
+    		}
+  		}
+  	})
 }));
 
 let priceDetails = Container.template($ => ({
-	top: 0, bottom: 0, left:0, right: 0,
-	contents: [
-		new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice, style: h1style }),
-		new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
-	]   	 	
+  top: 0, bottom: 0, left:0, right: 0,
+  contents: [
+    new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice.toFixed(2), style: h1style }),
+    new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
+  ]
 }));
 
 let CostOverview = Container.template($ => ({
-	left: 0, right: 0, top: 0, height: 265,
-	contents: [
-		new priceDetailsCanvas($),
-		new priceDetails
-	],
-	behavior: Behavior({
-		onUpdate(container){
-			trace("updating cost overview \n");
-			container.run(new Fade, container.last, new priceDetails);
-		},
-		                		
-   	 		
-	})
-	
+  left: 0, right: 0, top: 0, height: 265,
+  contents: [
+    new priceDetailsCanvas($),
+    new priceDetails
+  ],
+  behavior: Behavior({
+    onUpdate(container){
+      trace("updating cost overview \n");
+      container.run(new Fade, container.last, new priceDetails);
+    },
+
+
+  })
+
 }));
 
 let CurrentCalorieContainer = Container.template($ => ({top: 10, left: 0, right: 0, contents: new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style })}));
 
 let CalorieOverview = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 20,
-	contents: [
-		new CurrentCalorieContainer,
-		new Label({top: 0, string: "average calories", style: h2style }),
-		new Label({top: 0, string: "per serving", style: h3style })
-	],
-	behavior: Behavior({
-		onUpdate(container){
-			trace("updating calorie overview \n");
-			container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }) );
-		}	
-	})
+  left: 0, right: 0, top: 0, bottom: 20,
+  contents: [
+    new CurrentCalorieContainer,
+    new Label({top: 0, string: "average calories", style: h2style }),
+    new Label({top: 0, string: "per serving", style: h3style })
+  ],
+  behavior: Behavior({
+    onUpdate(container){
+      trace("updating calorie overview \n");
+      container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }) );
+    }
+  })
 }));
 
 
@@ -370,15 +378,17 @@ let CheckoutScreen = Container.template($ => ({
 	contents: [new BackArrow({ left: 20, name: navHierarchy[0] }), tempCheckoutImg],
 }));
 
+
 let OverviewScreen = Column.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
-	contents: [	
-		new CostOverview({percentage: currentPrice * 100 / userBudget }),
-		new CalorieOverview,	
-		new CheckoutButton
-	]
+  left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
+  contents: [
+    new CostOverview({percentage: currentPrice * 100 / userBudget }),
+    new CalorieOverview,
+    new CheckoutButton
+  ]
 }));
-
+
+
 application.behavior = Behavior({
 	onDisplayed(application) {
         application.discover("alacarte-device");
@@ -410,65 +420,68 @@ application.behavior = Behavior({
     }
 })
 
+// Holds main content
 let CurrentScreen = Container.template($ => ({
-	left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen",
-	contents: [$.screen]
+  left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen",
+  contents: [$.screen]
 }))
 
+// Main app container
 let AppContainer = Container.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
-	skin: whiteSkin, active: true,
-	contents: [
-		new CurrentScreen({ screen: $.screen }), 
-		new Header({ string: $.header }), 
+  left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
+  skin: whiteSkin, active: true,
+  contents: [
+    new CurrentScreen({ screen: $.screen }), 
+    new Header({ string: $.header }), 
 
-	],
-	behavior: Behavior({
-		login: function(container) {
-		  	var toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
-			application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
-			application.add(new Footer);
-		},
-		transitionToScreen: function(container, params) {
-			let toScreen;
-	    	switch(params.to){
-	    		case "cost":
-	    			navHierarchy.unshift("3");
-	    			toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo, cartData}), itemInfo: itemInfo, cartData: cartData });
-	    			toScreen.name = "cost";
-	    			break;
-	    		case "nutrition":
-	    			navHierarchy.unshift("4");
-	    			toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}) });
-	    			break;
-	    		case "nutritionDetails":
-	    			navHierarchy.unshift("5");
-		    		toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type, percentage: params.percentage}), itemInfo: itemInfo, cartData: cartData });
-		    		break;
-	    		case "search":
-	    			navHierarchy.unshift("6");
-	    			toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen, itemInfo: itemInfo, cartData: cartData });
-	    			break;
-	    		case "checkout":
-	    			navHierarchy.unshift("2");
-	    			toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen, itemInfo: itemInfo, cartData: cartData });
-	    			break;
-	    		default: // Default is transition to OverviewScreen (triggered when pressing back button)
-	    			navHierarchy.unshift("1");
-	    			toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
-	    	}
-	
-	    	// Runs transition on AppContainer (which contains Header and CurrentScreen)
-	    	var prevScreenNum = navHierarchy.pop();
-	    	var currentScreenNum = navHierarchy[0];
-	    	var pushDirection;
-	    	//trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
-	    	currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
-	    	container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
-		}
-	})
+  ],
+  behavior: Behavior({
+    login: function(container) {
+      var toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
+      application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
+      application.add(new Footer);
+    },
+    transitionToScreen: function(container, params) {
+      let toScreen;
+      switch(params.to){
+        case "cost":
+          navHierarchy.unshift("3");
+          toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo, cartData}), itemInfo: itemInfo, cartData: cartData });
+          toScreen.name = "cost";
+          break;
+        case "nutrition":
+          navHierarchy.unshift("4");
+          toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}) });
+          break;
+        case "nutritionDetails":
+          navHierarchy.unshift("5");
+          toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type, percentage: params.percentage}), itemInfo: itemInfo, cartData: cartData });
+          break;
+        case "search":
+          navHierarchy.unshift("6");
+          toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen, itemInfo: itemInfo, cartData: cartData });
+          break;
+        case "checkout":
+          navHierarchy.unshift("2");
+          toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen, itemInfo: itemInfo, cartData: cartData });
+          break;
+        default: // Default is transition to OverviewScreen (triggered when pressing back button)
+          navHierarchy.unshift("1");
+          toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
+      }
+  
+      // Runs transition on AppContainer (which contains Header and CurrentScreen)
+      var prevScreenNum = navHierarchy.pop();
+      var currentScreenNum = navHierarchy[0];
+      var pushDirection;
+      //trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
+      currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
+      container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
+    }
+  })
 
 }))
-
+
+
 application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 
