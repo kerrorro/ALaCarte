@@ -8,27 +8,21 @@ import KEYBOARD from './keyboard';
 import Pins from "pins";
 
 let remotePins;
-let navHierarchy = ["1"]
-
+let navHierarchy = ["1"];
+let cartContents = [];
 
 
 /*** USER INPUT & DEVICE VARIABLES ***/
 var deviceURL = "";
 var userNum;
 var userBudget;
-var currentPrice = 28.17;
-var currentCalories = "280";
+var currentPrice = 0;
+var tax = 0.09;
+var currentCalories = 0;
+var averageCalories = 0;
 let grayColor = '#828282';
 var validResponse1 = false;
 var validResponse2 = false;
-
-/*
-var currentPrice = 0;
-for (var itemID of cartData.items) {
-  currentPrice += itemInfo[itemID].price;
-}
-currentPrice += currentPrice * 0.09;
-*/
 
 
 /**** DEVICE DETECTION HANDLERS ****/
@@ -325,7 +319,10 @@ let CostOverview = Container.template($ => ({
   ],
   behavior: Behavior({
     onUpdate(container){
-      trace("updating cost overview \n");
+      var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
+	  currentPrice += itemPrice;
+	  currentPrice *= (1 + tax);
+	  trace("CURRENT PRICE: " + currentPrice + "\n");
       container.run(new Fade, container.last, new priceDetails);
     },
 
@@ -334,7 +331,7 @@ let CostOverview = Container.template($ => ({
 
 }));
 
-let CurrentCalorieContainer = Container.template($ => ({top: 10, left: 0, right: 0, contents: new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style })}));
+let CurrentCalorieContainer = Container.template($ => ({top: 10, left: 0, right: 0, contents: new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style })}));
 
 let CalorieOverview = Column.template($ => ({
   left: 0, right: 0, top: 0, bottom: 20,
@@ -345,8 +342,11 @@ let CalorieOverview = Column.template($ => ({
   ],
   behavior: Behavior({
     onUpdate(container){
-      trace("updating calorie overview \n");
-      container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: currentCalories, style: h1style }) );
+      var itemCalories = itemInfo[cartContents[cartContents.length - 1]].calories;
+	  currentCalories += itemCalories;
+	  trace("CURRENT CALORIES: " + currentCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
+	  averageCalories = currentCalories*1.0/cartContents.length;
+      container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style }) );
     }
   })
 }));
@@ -414,8 +414,11 @@ application.behavior = Behavior({
         );
     },
     onListening(application){
-    	remotePins.repeat("/cartData/read", 1000, result => {
-          	trace("COMPANION: " + result + "\n");
+    	remotePins.repeat("/cartData/read", 1000, result => {	
+    		if ("[" + cartContents.join() + "]" != result){
+    			cartContents = JSON.parse(result);
+    			application.distribute("onUpdate");	
+    		}
 		});
     }
 })

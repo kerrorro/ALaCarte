@@ -65,7 +65,7 @@ var ButtonContainerBehavior = Behavior({
     }
 })
 var Fade = function() {
-    Transition.call(this, 250);
+    Transition.call(this, 200);
 };
 Fade.prototype = Object.create(Transition.prototype, {
     onBegin: { value: 
@@ -135,12 +135,12 @@ var TransitionContainer = Container.template($ => ({
 	],
 	behavior: Behavior({
 		onItemAdded(container, item){
-			container.run(new Fade, container.last, new AddedItemContainer({name: "addedItem", string: "Added " + item, skin: new Skin({fill: "#5886E4"})}));
-			container.wait(1500);  // Runs onComplete transition after wait time	  
+			container.run(new Fade, container.blank, new AddedItemContainer({name: "addedItem", string: "Added " + item, skin: new Skin({fill: "#5886E4"})}));
+			container.wait(1000);  // Runs onComplete transition after wait time	  
    		},
    	 	onComplete(container){
    	  		// Removes the message after wait time
-   	  		container.run(new Fade, container.last, new AddedItemContainer({name: "blank", skin: new Skin({fill: "white"}),string: "" }));
+   	  		container.run(new Fade, container.addedItem, new AddedItemContainer({name: "blank", skin: new Skin({fill: "white"}),string: "" }));
    	 	},
 	})
 }))
