@@ -5,21 +5,6 @@ import {
     BottomScrollerShadow
 } from 'scroller';
 
-// Hardwire Data For Now
-let cartData = {
-	items: [0, 1, 2, 3, 4], // array of item ids; use itemInfo dictionary for more info
-	location: "Unsure what to put here -- Caroline might know better"
-}
-
-// item id -> nutitional info
-// add more info as needed
-let itemInfo = {
-	0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit" },
-	1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies" },
-	2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread" },
-	3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef" },
-	4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit" },
-}
 var fontColor = "#828282";
 
 let hugeLabelStyle = new Style({ 
@@ -59,7 +44,7 @@ export var priceScreen = Container.template($ => {
 	
 	var scrollContents = [];
 	var subtotal = 0;
-    for (var itemID of $.cartData.items) {
+    for (var itemID of $.cartData) {
     	let info = $.itemInfo[itemID];
     	var skin;
     	subtotal += info.price;
@@ -157,8 +142,6 @@ let itemPriceLine = Line.template($ => ({
 		new Container({width:7, height: 43, left:15, skin: $.skin}),
 		new Label({left: 10, top: 0, bottom: 0, height:43, width: 80, string: $.price, style: priceStyle}),
 		new Label({right: 0, top: 0, bottom: 0, height:43, string: $.name, style: itemStyle}),
-
-		
 	]
 }));
 

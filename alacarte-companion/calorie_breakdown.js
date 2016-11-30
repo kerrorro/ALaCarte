@@ -166,7 +166,7 @@ export var calorieScreen = Column.template($ => {
 
   // Loop through all cart data items and find total calories and
   // total calories for each food group
-  var items = $.cartData.items;
+  var items = $.cartData;
   var totalCal = 0;
   var calories = {"Produce": 0, "Sweets": 0, "Grains": 0, "Meats": 0, "Dairy": 0}
   for (var item of items) {
@@ -281,7 +281,7 @@ export var calorieDetailsScreen = Column.template($ => {
     new calorieDetailsHeader({percentage: $.percentage}),
     new Container({left: 15, right: 15, top: 15, height: 1, skin: blackSkin}), // Line Breaker
   ]
-  var items = $.cartData.items;
+  var items = $.cartData;
   for (var item of items) {
     var itemInfo = $.itemInfo[item];
     if (itemInfo.type == $.type) {

@@ -9,8 +9,21 @@ import Pins from "pins";
 
 let remotePins;
 let navHierarchy = ["1"];
+
+
+/****** DATA ******/
+// Polled cart items from device pin
 let cartContents = [];
 
+// Item database associating item "RFID"s with nutritional and price information
+let itemInfo = {
+  0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit", price: 0.10 },
+  1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies", price: 2.99 },
+  2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread", price: 3.99 },
+  3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef", price: 5.00 },
+  4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit", price: 0.50 },
+  5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
+}
 
 /*** USER INPUT & DEVICE VARIABLES ***/
 var deviceURL = "";
@@ -63,32 +76,15 @@ let fieldStyle = new Style({ color: '#FFFFFF', font: 'bold 24px Open Sans', hori
 let fieldHintStyle = new Style({ color: "#E0E0E0", font: 'bold 15px Quicksand', horizontal: 'middle',
   vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#FFFFFF', '#acd473'] });
-let checkoutCategoryFont = new Style({ color: "#828282", font: '24px Quicksand', horizontal: 'middle',
+let checkoutCategoryFont = new Style({ color: grayColor, font: '24px Quicksand', horizontal: 'middle',
   vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
-let checkoutSubValueFont = new Style({ color: "#828282", font: 'bold 35px Open Sans', horizontal: 'middle',
+let checkoutSubValueFont = new Style({ color: grayColor, font: 'bold 35px Open Sans', horizontal: 'middle',
   vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let checkoutTotalValueFont = new Style({ color: "#FFAC8B", font: 'bold 45px Open Sans', horizontal: 'middle',
   vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 
 
 
-/****** DATA ******/
-// Hardwire Data For Now
-let cartData = {
-  items: [0, 1, 2, 3, 4, 5, 1, 1, 2], // array of item ids; use itemInfo dictionary for more info
-  location: "Unsure what to put here -- Caroline might know better"
-}
-
-// item id -> nutitional info
-// add more info as needed
-let itemInfo = {
-  0: { name: "Banana", calories: 10, type: "Produce", subtype: "Fruit", price: 0.10 },
-  1: { name: "Chocolate Chip Cookies", calories: 150, type: "Sweets", subtype: "Cookies", price: 2.99 },
-  2: { name: "Whole Wheat Bread", calories: 128, type: "Grains", subtype: "Bread", price: 3.99 },
-  3: { name: "Ground Beef", calories: 155, type: "Meats", subtype: "Beef", price: 5.00 },
-  4: { name: "Apple", calories: 30, type: "Produce", subtype: "Fruit", price: 0.50 },
-  5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
-}
 
 /****** LOGIN SCREEN COMPONENTS ******/
 // Fade transition for error and update content.
@@ -253,17 +249,14 @@ let priceDetailsCanvas = Canvas.template($ => ({
     		this.onDraw(canvas)
   		},
   		onUpdate(canvas){
-    		trace("onUpdate \n");
     		this.percentage = totalPrice * 100 / userBudget;
     		this.onDraw(canvas);
   		},
   		onDraw(canvas){
-    		trace("drawing w/ " + this.percentage + "%\n");
     		let yellow = "#FFAC8B";
     		let red = "#E94363";
     		let gray = "#e0e0e0";
     		let total = (this.percentage / 100) * 2*Math.PI;
-   			trace("TOTAL: " + total + "\n");
   			let ctx = canvas.getContext("2d");
     		ctx.lineWidth = 12;
 
@@ -326,11 +319,8 @@ let CostOverview = Container.template($ => ({
   ],
   behavior: Behavior({
     onUpdate(container){
-      var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
-	  subtotalPrice += itemPrice;
-	  totalPrice = subtotalPrice * (1 + tax);
-	  trace("TOTAL PRICE: " + totalPrice + "\n");
-      container.run(new Fade, container.last, new priceDetails);
+    	trace("updating price UI \n");
+    	container.run(new Fade, container.last, new priceDetails);
     },
 
 
@@ -349,11 +339,8 @@ let CalorieOverview = Column.template($ => ({
   ],
   behavior: Behavior({
     onUpdate(container){
-      var itemCalories = itemInfo[cartContents[cartContents.length - 1]].calories;
-	  totalCalories += itemCalories;
-	  trace("TOTAL CALORIES: " + totalCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
-	  averageCalories = totalCalories*1.0/cartContents.length;
-      container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style }) );
+    	trace("updating calorie UI \n");
+     	container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style }) );
     }
   })
 }));
@@ -438,9 +425,26 @@ application.behavior = Behavior({
     	remotePins.repeat("/cartData/read", 1000, result => {	
     		if ("[" + cartContents.join() + "]" != result){
     			cartContents = JSON.parse(result);
-    			application.distribute("onUpdate");	
+    			application.delegate("onUpdate");	
     		}
 		});
+    },
+    onUpdate(application){
+    	trace("Updating app values \n");
+    	// Update stored calorie values
+    	var itemCalories = itemInfo[cartContents[cartContents.length - 1]].calories;
+	 	totalCalories += itemCalories;
+	  	trace("TOTAL CALORIES: " + totalCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
+		averageCalories = totalCalories*1.0/cartContents.length;
+		
+		// Update stored price values
+    	var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
+	 	subtotalPrice += itemPrice;
+	  	totalPrice = subtotalPrice * (1 + tax);
+	  	trace("TOTAL PRICE: " + totalPrice + "\n\n");
+	  	
+	  	// Updates overview user interface with newly stored values
+	  	application.appContainer.distribute("onUpdate");
     }
 })
 
@@ -467,34 +471,31 @@ let AppContainer = Container.template($ => ({
     },
     transitionToScreen: function(container, params) {
       let toScreen;
-      trace("NAV HIERARCHY: " + navHierarchy + "\n");
-      trace("PARAMS TO " + params.to + "\n");
       switch(params.to){
         case "cost":
           navHierarchy.unshift("3");
-          toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo, cartData}), itemInfo: itemInfo, cartData: cartData });
+          toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo: itemInfo, cartData: cartContents})});
           toScreen.name = "cost";
           break;
         case "nutrition":
           navHierarchy.unshift("4");
-          toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo, cartData}) });
+          toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo: itemInfo, cartData: cartContents}) });
           break;
         case "nutritionDetails":
           navHierarchy.unshift("5");
-          toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo, cartData, type: params.type, percentage: params.percentage}), itemInfo: itemInfo, cartData: cartData });
+          toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo: itemInfo, cartData: cartContents, type: params.type, percentage: params.percentage})});
           break;
         case "search":
           navHierarchy.unshift("6");
-          toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen, itemInfo: itemInfo, cartData: cartData });
+          toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen });
           break;
         case "checkout":
           navHierarchy.unshift("2");
-          trace("pass \n");
           toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen });
           break;
         default: // Default is transition to OverviewScreen (triggered when pressing back button)
           navHierarchy.unshift("1");
-          toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen, itemInfo: itemInfo, cartData: cartData });
+          toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
       }
   
       // Runs transition on AppContainer (which contains Header and CurrentScreen)
