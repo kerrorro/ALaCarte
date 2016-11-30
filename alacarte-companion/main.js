@@ -38,6 +38,8 @@ let grayColor = '#828282';
 var validResponse1 = false;
 var validResponse2 = false;
 
+var nutritionDetailType;
+var nutritionDetailPercent;
 
 /**** DEVICE DETECTION HANDLERS ****/
 Handler.bind("/discover", Behavior({
@@ -197,14 +199,11 @@ let InputField = Container.template($ => ({
                         		var feedbackContainer = application.appContainer.currentScreen.loginScreen.bottomContainer.feedbackContainer;
 	                        	if (!validResponse1 || !validResponse2){
 	                        		if (!validResponse1 && !validResponse2){
-	                        			trace("both invalid \n");
 	                        			feedbackContainer.delegate("printError", 0);
 	                        		}
 	                        		else if (!validResponse1){
-	                        			trace("invalid number\n");
 	                        			feedbackContainer.delegate("printError", 1);
 	                        		} else {
-	                        			trace("invalid budget\n");
 	                        			feedbackContainer.delegate("printError", 2);
 	                        		}
 	                        	} else {
@@ -321,11 +320,8 @@ let CostOverview = Container.template($ => ({
     onUpdate(container){
     	trace("updating price UI \n");
     	container.run(new Fade, container.last, new priceDetails);
-    },
-
-
+    }
   })
-
 }));
 
 let CurrentCalorieContainer = Container.template($ => ({top: 10, left: 0, right: 0, contents: new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style })}));
@@ -450,7 +446,7 @@ application.behavior = Behavior({
 
 // Holds main content
 let CurrentScreen = Container.template($ => ({
-  left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen",
+  left: 0, right: 0, top: 70, bottom: 0, name: "currentScreen", skin: whiteSkin,
   contents: [$.screen]
 }))
 
@@ -483,6 +479,8 @@ let AppContainer = Container.template($ => ({
           break;
         case "nutritionDetails":
           navHierarchy.unshift("5");
+          nutritionDetailType = params.type;
+          nutritionDetailPercent = params.percentage;
           toScreen = new AppContainer({ header: params.type + " Breakdown", screen: new calorieDetailsScreen({itemInfo: itemInfo, cartData: cartContents, type: params.type, percentage: params.percentage})});
           break;
         case "search":
@@ -505,11 +503,38 @@ let AppContainer = Container.template($ => ({
       //trace("CurrentScreen: " + currentScreenNum + "   PreviousScreen: " + prevScreenNum + "\n");
       currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
       container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
+    },
+    onUpdate: function(container){
+    	// Crossfade update new cart info on breakdown pages
+    	if (navHierarchy[0] == "2" || navHierarchy[0] == "3" || navHierarchy[0] == "4" || navHierarchy[0] == "5"){
+    		let toScreen;
+    		switch (navHierarchy[0]){
+    			case "2": 	// Checkout
+    				toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen });
+    				break;
+    			case "3":	// Cost
+    				toScreen = new AppContainer({ header: "Price Breakdown", screen: new priceScreen({itemInfo: itemInfo, cartData: cartContents})});
+    				break;
+    			case "4":	// Nutrition
+    				toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo: itemInfo, cartData: cartContents}) });
+    				break;
+    				
+    			case "5":	// Nutrition Details
+    				// Only update screen if already on the same type screen
+    				var addedItemType = itemInfo[cartContents[cartContents.length - 1]].type;
+    				if (addedItemType == nutritionDetailType){
+    					toScreen = new AppContainer({ header: nutritionDetailType + " Breakdown", screen: new calorieDetailsScreen({itemInfo: itemInfo, cartData: cartContents, type: nutritionDetailType, percentage: nutritionDetailPercent})});
+    				}
+    				break;
+    		}
+    		if (toScreen != undefined){
+    			container.run(new CrossFade(), container.first, toScreen, { duration: 500 });
+    		}
+    	}
     }
   })
 
 }))
 
-//application.add(new AppContainer({header: "Checkout", screen: new CheckoutScreen }));
 application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 

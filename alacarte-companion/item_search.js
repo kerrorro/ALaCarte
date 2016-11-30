@@ -317,6 +317,7 @@ export var itemSearchScreen = Container.template($ => ({    name: "search", lef
    			while(mapCircleCount > 0) { application.distribute("clearLocation"); }
    			container.scroller.itemList.empty();
    			userInput = [];
-   	 	}
+   	 	},
+   	 	onUpdate(container){}
    })}));
 

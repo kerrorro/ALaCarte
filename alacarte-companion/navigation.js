@@ -40,7 +40,6 @@ let arrowBehavior = Behavior({
 		arrow.variant = 0;
 	},
 	onTouchEnded: function(arrow){
-		trace("ARROW NAME: " + arrow.name + "\n");
 		arrow.variant = 1;
 		var toScreen;
 		var type;

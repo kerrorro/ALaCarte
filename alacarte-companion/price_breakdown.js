@@ -36,7 +36,7 @@ var redSkin = new Skin( {fill : "#E94363"});
 var lightblueSkin = new Skin({fill : "#68E1F4"});
 var purpleSkin = new Skin({fill: "#664266"});
 var yellowSkin = new Skin({ fill: "#FFC273"});
-var blackSkin = new Skin({fill: "#828282"});
+var graySkin = new Skin({fill: "#D7D7D7"});
 let darkGraySkin = new Skin({ fill: "#202020" });
 let whiteSkin = new Skin({fill: "white"});
 
@@ -146,7 +146,7 @@ let itemPriceLine = Line.template($ => ({
 }));
 
 let seperateLine = Container.template($ => ({
-	width:344, left:15, height: 1, skin: blackSkin,
+	width:344, left:15, height: 1, skin: graySkin,
 }));
 
 var contentToScrollVertically = Column.template($ => {

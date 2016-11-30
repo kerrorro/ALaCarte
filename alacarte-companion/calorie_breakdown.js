@@ -11,6 +11,11 @@ let setTimeout = function(callback, duration, callbackArgs) {
     if (callback) callback(callbackArgs);
   });
 }
+var sweetsPercent = 0;
+var producePercent = 0;
+var dairyPercent = 0;
+var meatsPercent = 0;
+var grainsPercent = 0;
 
 let grayColor = '#828282';
 let peachColor = '#FFAC8B';
@@ -19,33 +24,36 @@ let tealColor = '#68E1F4'
 let purpleColor = '#664266'
 let orangeColor = '#FFC273';
 
+let headingStyle = new Style({
+   color: grayColor, font: 'bold 20px Open Sans', horizontal: 'center', vertical: 'middle',
+});
 let percentageStyle = new Style({
-   color: 'black', font: '16px', horizontal: 'center', vertical: 'middle',
+   color: grayColor, font: '16px Open Sans', horizontal: 'center', vertical: 'middle',
 });
 let categoryStyle = new Style({
-   color: 'black', font: '16px', horizontal: 'right', vertical: 'middle',
+   color: grayColor, font: '16px Open Sans', horizontal: 'right', vertical: 'middle',
 });
 let categoryDetailsHeaderStyleLeft = new Style({
-   color: "white", font: '18px', horizontal: "left", vertical: 'middle',
+   color: "white", font: '18px Open Sans', horizontal: "left", vertical: 'middle',
 });
 let categoryDetailsHeaderStyleRight = new Style({
-   color: "white", font: '18px', horizontal: "right", vertical: 'middle',
+   color: "white", font: '18px Open Sans', horizontal: "right", vertical: 'middle',
 });
 let productDetailsStyleLeft = new Style({
-   color: "black", font: '40px', horizontal: "left", vertical: 'middle',
+   color: grayColor, font: '30px Open Sans', horizontal: "left", vertical: 'middle',
 });
 let productDetailsStyleRight = new Style({
-   color: "black", font: '18px', horizontal: "left", vertical: 'bottom',
+   color: grayColor, font: '20px Open Sans', horizontal: "right", vertical: 'bottom',
 });
 let categoryTotalTitleStyle = new Style({
-   color: grayColor, font: '32px', horizontal: 'center', vertical: 'middle',
+   color: grayColor, font: 'bold 28px Open Sans', horizontal: 'center', vertical: 'middle',
 });
 let calorieDetailsCanvasMainStyle = new Style({
-   color: grayColor, font: '40px', horizontal: "middle", vertical: 'middle',
+   color: grayColor, font: 'bold 40px Open Sans', horizontal: "middle", vertical: 'middle',
 });
 
 let whiteSkin = new Skin({fill: "white"});
-let blackSkin = new Skin({fill: "black"});
+let graySkin = new Skin({fill: "#D7D7D7"});
 
 var animator = function($) {
   if ($.container.width >= $.width) {
@@ -99,7 +107,7 @@ let FoodGroupInfo = Column.template($ => {
     contents: [
       new FoodGroupLabels($),
       new CategoryColumnBar($),
-      new Container({left: 0, right: 0, top: 15, height: 1, skin: blackSkin}), // Line Breaker
+      new Container({left: 0, right: 0, top: 5, height: 1, skin: graySkin}), // Line Breaker
     ],
     behavior: Behavior({
       percentage: $.percentage,
@@ -176,18 +184,18 @@ export var calorieScreen = Column.template($ => {
   }
 
   // Set percentage for each food group
-  var sweetsPercent = Math.round((calories["Sweets"] / totalCal) * 100);
-  var producePercent = Math.round((calories["Produce"] / totalCal) * 100);
-  var dairyPercent = Math.round((calories["Dairy"] / totalCal) * 100);
-  var meatsPercent = Math.round((calories["Meats"] / totalCal) * 100);
-  var grainsPercent = Math.round((calories["Grains"] / totalCal) * 100);
-
+  if ($.cartData.length != 0){
+	sweetsPercent = Math.round((calories["Sweets"] / totalCal) * 100);
+	producePercent = Math.round((calories["Produce"] / totalCal) * 100);
+	dairyPercent = Math.round((calories["Dairy"] / totalCal) * 100);	meatsPercent = Math.round((calories["Meats"] / totalCal) * 100);
+	grainsPercent = Math.round((calories["Grains"] / totalCal) * 100);
+  }
   return ({
      left: 0, right: 0, top: 0, bottom: 0, name: "calorieScreen", skin: new Skin({fill: "#fcfcfd"}),
      contents: [
-      new Label({left: 0, right: 0, top: 20, height: 20}, null, categoryTotalTitleStyle, "Total"), // Title Label
+      new Label({left: 0, right: 0, top: 20, height: 30}, null, categoryTotalTitleStyle, "Per serving calorie total: " + totalCal), // Title Label
       new CategoryVisualBar({produce: producePercent, sweets: sweetsPercent, grains: grainsPercent, meats: meatsPercent, dairy: dairyPercent}),
-      new Container({left: 15, right: 15, top: 10, height: 1, skin: blackSkin}), // Line Breaker
+      new Container({left: 15, right: 15, top: 10, height: 1, skin: graySkin}), // Line Breaker
       new FoodGroupInfoLayer({name: "Produce", percentage: producePercent, fill: peachColor, delay: 0*100}),
       new FoodGroupInfoLayer({name: "Sweets", percentage: sweetsPercent, fill: redColor, delay: 1.5*100}),
       new FoodGroupInfoLayer({name: "Grains", percentage: grainsPercent, fill: tealColor, delay: 3*100}),
@@ -262,16 +270,24 @@ let calorieDetailsHeader = Container.template($ => {
 let productDetailsLine = Line.template($ => ({
   left: 0, right: 0, top: 0, height: 30,
   contents: [
-    new Label({left: 15, width: 60, top: 10, bottom: 10}, null, productDetailsStyleLeft, $.productCalories),
-    new Label({left: 10, right: 10, top: 10, bottom: 10}, null, productDetailsStyleRight, $.productName),
+    new Label({left: 50, top: 0, bottom: 0}, null, productDetailsStyleLeft, $.productCalories),
+    new Label({left: 0, right: 30, top: 0, bottom: 0}, null, productDetailsStyleRight, $.productName),
   ]
 }));
 
+let productDetailHeadings = Line.template($ => ({
+	left: 0 , right: 0, top: 0,
+	contents: [
+		new Label({left: 40, string: "Calories per serving", style: headingStyle}),
+		new Label({left: 10, right: 10, string: "Cart Item", style: headingStyle})
+	]
+}));
+
 let productDetailsColumn = Column.template($ => ({
-  left: 15, right: 15, top: 20,
+  left: 15, right: 15, top: 5,
   contents: [
     new productDetailsLine($),
-    new Container({left: 0, right: 0, top: 15, height: 1, skin: blackSkin})
+    new Container({left: 0, right: 0, top: 5, height: 1, skin: graySkin})
   ]
 }));
 
@@ -279,7 +295,8 @@ export var calorieDetailsScreen = Column.template($ => {
 
   var contents = [
     new calorieDetailsHeader({percentage: $.percentage}),
-    new Container({left: 15, right: 15, top: 15, height: 1, skin: blackSkin}), // Line Breaker
+    new productDetailHeadings,
+    new Container({left: 15, right: 15, top: 5, height: 1, skin: graySkin}), // Line Breaker
   ]
   var items = $.cartData;
   for (var item of items) {
@@ -290,7 +307,8 @@ export var calorieDetailsScreen = Column.template($ => {
   }
 
   return ({
-     left: 0, right: 0, top: 0, bottom: 0,
+     left: 0, right: 0, top: 0, bottom: 0, skin: whiteSkin,
      contents: contents
+     })
   });
 });
