@@ -16,9 +16,10 @@ let cartContents = [];
 var deviceURL = "";
 var userNum;
 var userBudget;
-var currentPrice = 0;
+var subtotalPrice = 0;
+var totalPrice = 0;
 var tax = 0.09;
-var currentCalories = 0;
+var totalCalories = 0;
 var averageCalories = 0;
 let grayColor = '#828282';
 var validResponse1 = false;
@@ -45,7 +46,7 @@ let h2style = new Style({ font: "30px Open Sans", color: grayColor });
 let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 
 
-let tempCheckoutImg = new Picture({ width: 223, height: 336, url: "assets/tempCheckoutScreen.png"})
+
 /***** PICTURES, TEXTURES, AND SKINS *****/
 let headerSkin = new Skin({ fill: "#5886E4"});
 let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
@@ -62,6 +63,12 @@ let fieldStyle = new Style({ color: '#FFFFFF', font: 'bold 24px Open Sans', hori
 let fieldHintStyle = new Style({ color: "#E0E0E0", font: 'bold 15px Quicksand', horizontal: 'middle',
   vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#FFFFFF', '#acd473'] });
+let checkoutCategoryFont = new Style({ color: "#828282", font: '24px Quicksand', horizontal: 'middle',
+  vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let checkoutSubValueFont = new Style({ color: "#828282", font: 'bold 35px Open Sans', horizontal: 'middle',
+  vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
+let checkoutTotalValueFont = new Style({ color: "#FFAC8B", font: 'bold 45px Open Sans', horizontal: 'middle',
+  vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 
 
 
@@ -247,7 +254,7 @@ let priceDetailsCanvas = Canvas.template($ => ({
   		},
   		onUpdate(canvas){
     		trace("onUpdate \n");
-    		this.percentage = currentPrice * 100 / userBudget;
+    		this.percentage = totalPrice * 100 / userBudget;
     		this.onDraw(canvas);
   		},
   		onDraw(canvas){
@@ -306,7 +313,7 @@ let priceDetailsCanvas = Canvas.template($ => ({
 let priceDetails = Container.template($ => ({
   top: 0, bottom: 0, left:0, right: 0,
   contents: [
-    new Label({ name: "currentPrice", top: 0, bottom: 0, string: "$" + currentPrice.toFixed(2), style: h1style }),
+    new Label({ name: "totalPrice", top: 0, bottom: 0, string: "$" + totalPrice.toFixed(2), style: h1style }),
     new Label({ top: 50, bottom: 0, left: 50, right: 0, string: "/ $" + userBudget, style: h3style })
   ]
 }));
@@ -320,9 +327,9 @@ let CostOverview = Container.template($ => ({
   behavior: Behavior({
     onUpdate(container){
       var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
-	  currentPrice += itemPrice;
-	  currentPrice *= (1 + tax);
-	  trace("CURRENT PRICE: " + currentPrice + "\n");
+	  subtotalPrice += itemPrice;
+	  totalPrice = subtotalPrice * (1 + tax);
+	  trace("TOTAL PRICE: " + totalPrice + "\n");
       container.run(new Fade, container.last, new priceDetails);
     },
 
@@ -343,9 +350,9 @@ let CalorieOverview = Column.template($ => ({
   behavior: Behavior({
     onUpdate(container){
       var itemCalories = itemInfo[cartContents[cartContents.length - 1]].calories;
-	  currentCalories += itemCalories;
-	  trace("CURRENT CALORIES: " + currentCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
-	  averageCalories = currentCalories*1.0/cartContents.length;
+	  totalCalories += itemCalories;
+	  trace("TOTAL CALORIES: " + totalCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
+	  averageCalories = totalCalories*1.0/cartContents.length;
       container.first.run(new Fade, container.first.first, new Label({name: "calorieCount", top: 10, string: averageCalories.toFixed(2), style: h1style }) );
     }
   })
@@ -363,26 +370,40 @@ let CheckoutButton = Content.template($ => ({
 		onTouchEnded: function(button){
 			button.variant = 0;
 			application.first.delegate("transitionToScreen", { to: "checkout" });
-			/*
-			// testing onUpdate for overview screen
-			currentPrice = 80.48;
-			currentCalories = "300";
-			application.distribute("onUpdate");*/
 		}
 	})
 }));
 
+let CheckoutPriceLine = Line.template($ => ({
+	right: 0, top: 0, bottom: 0,
+	contents: [
+		new Label({ right: 0, bottom: 10, string: $.title, style: checkoutCategoryFont}),
+		new Label({ left: 15, bottom: 5, string: $.amount, style: $.amountStyle})
+	]
+}));
 
-let CheckoutScreen = Container.template($ => ({
-	left: 0, right: 0, top: 0, bottom: 0, name: "checkout",
-	contents: [new BackArrow({ left: 20, name: navHierarchy[0] }), tempCheckoutImg],
+let CheckoutScreen = Column.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 75, active: true, name: "checkout",
+	contents: [
+		new Line({left: 0, right: 0, top: 0, height: 200, 
+			contents: [
+				new BackArrow({ top: 0, bottom: 0, left: 20, name: navHierarchy[0] }),
+				new Column({left: 0, right: 20, top: 0, bottom: 10, contents: [
+					new CheckoutPriceLine({title: "Subtotal", amount: "$" + subtotalPrice.toFixed(2), amountStyle: checkoutSubValueFont}),
+					new CheckoutPriceLine({title: "Tax", amount: "$" + (tax*subtotalPrice).toFixed(2), amountStyle: checkoutSubValueFont}),
+					new CheckoutPriceLine({title: "Total", amount: "$" + totalPrice.toFixed(2), amountStyle: checkoutTotalValueFont})
+				]}) 
+			]}),
+		new Container({left: 0, right: 0, top: 5, bottom: 5, contents: [new Picture ({ width: 200, height: 200, aspect: "fit", url: "assets/example_qr.png"})]}),
+		new Text({left: 60, right: 60, top: 5, bottom: 5, string: "Proceed to check out and show this code to a cashier.", style: checkoutCategoryFont })
+	],
 }));
 
 
 let OverviewScreen = Column.template($ => ({
   left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
   contents: [
-    new CostOverview({percentage: currentPrice * 100 / userBudget }),
+    new CostOverview({percentage: totalPrice * 100 / userBudget }),
     new CalorieOverview,
     new CheckoutButton
   ]
@@ -446,6 +467,8 @@ let AppContainer = Container.template($ => ({
     },
     transitionToScreen: function(container, params) {
       let toScreen;
+      trace("NAV HIERARCHY: " + navHierarchy + "\n");
+      trace("PARAMS TO " + params.to + "\n");
       switch(params.to){
         case "cost":
           navHierarchy.unshift("3");
@@ -466,7 +489,8 @@ let AppContainer = Container.template($ => ({
           break;
         case "checkout":
           navHierarchy.unshift("2");
-          toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen, itemInfo: itemInfo, cartData: cartData });
+          trace("pass \n");
+          toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen });
           break;
         default: // Default is transition to OverviewScreen (triggered when pressing back button)
           navHierarchy.unshift("1");
@@ -485,6 +509,6 @@ let AppContainer = Container.template($ => ({
 
 }))
 
-
+//application.add(new AppContainer({header: "Checkout", screen: new CheckoutScreen }));
 application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 
