@@ -37,7 +37,8 @@ var averageCalories = 0;
 let grayColor = '#828282';
 var validResponse1 = false;
 var validResponse2 = false;
-
+var displayingDiscover = false;
+var displayingConnectionLost = false;
 var nutritionDetailType;
 var nutritionDetailPercent;
 
@@ -46,12 +47,24 @@ Handler.bind("/discover", Behavior({
   onInvoke: function(handler, message){
     trace("Device connected\n");
     deviceURL = JSON.parse(message.requestText).url;
+    if(displayingDiscover){
+    	displayingDiscover = false;
+    	application.distribute("login");
+    }
+    if(displayingConnectionLost){
+    	displayingConnectionLost = false;
+    	application.remove(application.connectionLost);
+    }
   }
 }));
 
 Handler.bind("/forget", Behavior({
   onInvoke: function(handler, message){
     deviceURL = "";
+    if (!displayingConnectionLost){
+    	displayingConnectionLost = true;
+    	application.add(new ConnectionLostScreen);
+    }
   }
 }));
 
@@ -65,6 +78,7 @@ let h3style = new Style({ font: "20px Open Sans", color: "#BDBDBD" });
 /***** PICTURES, TEXTURES, AND SKINS *****/
 let headerSkin = new Skin({ fill: "#5886E4"});
 let mainLogoImg = new Picture({ top: 0, width: 252, height: 261, url: "assets/mainLogo.png"});
+let searchForCartImg = new Picture({ top: 5, bottom: 100, width: 307, height: 114, url: "assets/searchForCart.png"});
 let invalidTexture = new Texture("assets/invalidInputs.png");
 let invalidSkin = new Skin({ width: 328, height: 45, texture: invalidTexture, variants: 328 });
 let loginTexture = new Texture("assets/loginButton.png");
@@ -147,7 +161,14 @@ let LoginButton = Container.template($ => ({
 
 let BottomContainer = Column.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, name: "bottomContainer", 
-	contents: [new FeedbackContainer({ top: 5 }), new InputContainer]
+	contents: [new FeedbackContainer({ top: 5 }), new InputContainer],
+	behavior: Behavior({
+		onDeviceDiscovering: function(container){
+			displayingDiscover = true;
+			container.empty(0);
+			container.add(searchForCartImg);
+		}
+	})
 }));
 
 let InputContainer = Column.template($ => ({
@@ -235,8 +256,11 @@ let LoginScreen = Column.template($ => ({
 			container.focus();
 		}
 	})
+}));
+let ConnectionLostScreen = Container.template($ => ({
+	left: 0, right: 0, top: 0, bottom: 0, skin: headerSkin, name: "connectionLost",
+	contents: [ new Picture({width: 307, height: 434, aspect: "fit", url: "assets/connectionLost.png" })]
 }));
-
 
 /****** OVERVIEW SCREEN COMPONENTS ******/
 let priceDetailsCanvas = Canvas.template($ => ({
@@ -383,6 +407,8 @@ let CheckoutScreen = Column.template($ => ({
 }));
 
 
+
+
 let OverviewScreen = Column.template($ => ({
   left: 0, right: 0, top: 0, bottom: 0, active: true, name: "overview",
   contents: [
@@ -461,9 +487,14 @@ let AppContainer = Container.template($ => ({
   ],
   behavior: Behavior({
     login: function(container) {
-      var toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
-      application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
-      application.add(new Footer);
+    	if(deviceURL != ""){
+    		new Message(deviceURL + "onLogin").invoke(Message.JSON);
+      		var toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
+     		application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
+      		application.add(new Footer);
+      	} else {
+      		container.currentScreen.loginScreen.bottomContainer.delegate("onDeviceDiscovering");
+      	}
     },
     transitionToScreen: function(container, params) {
       let toScreen;

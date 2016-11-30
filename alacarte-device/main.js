@@ -3,6 +3,14 @@ var cartPin = require("simulator/bll");
 import Pins from "pins";
 let myPins;
 
+/*********** HANDLERS *************/
+Handler.bind("/onLogin", Behavior({
+    onInvoke: function(handler, message){
+		application.remove(application.waitingScreen);
+    }
+}));	
+
+/*********** DATA *************/
 // Cart items stored as their "RFID" values to be polled for by the companion app
 let cartContents = []
 
@@ -15,7 +23,8 @@ let itemRFIDs = {
 	"apple": 4,
 	"milk": 5,
 }		
-		
+
+	
 		
 /*********** ASSETS *************/
 let logoUrl = "assets/logo.png";
@@ -26,23 +35,14 @@ let cartItemsFont = new Style({ font: "16px ABeeZee", color: "white" });
 let logo = new Picture({ height: 106, top: 0, bottom: 30, url: "assets/logo.png" });
 let connectionError = new Picture({ height: 19, top:100, bottom: 0, url: "assets/error.png" });
 let pinsReady = new Picture({ height: 25, top: 100, bottom: 0, url: "assets/ready.png" });
-let icons = new Texture("assets/food_icons.png");
-let iconSkin = new Skin({
-  height: 80, width: 80,
-  texture: icons,
-  variants: 80
-});
-let IconContainer = Container.template($ => ({
-  top: 0, bottom: 50, height: 80, width: 80,
-  skin: iconSkin,
-  variant: $.variant,
-}));
-let StringContainer = Container.template($ => ({
-  top: 50, bottom: 0,
-  contents: [Label($, {style: abzFont, string: $.string})]
-}));
+let waitingImg = new Picture({ height: 250, width: 250, top: 0, bottom: 0, url: "assets/waiting.png" });
+let whiteSkin = new Skin({fill: "white"});
+let peachSkin = new Skin({fill: "#FFAC8B"});
+let blueSkin = new Skin({fill: "#5886E4"});
 var twoColorSkin = new Skin({ fill: ['#FFAC8B', '#FA8354'], });
 var labelStyle = new Style({ color: 'white', font: '20px', horizontal: 'null', vertical: 'null' });
+
+
 
 /*********** BEHAVIORS AND TRANSITIONS ******************/
 // Writes RFIDs associated with selected item to BLL
@@ -100,7 +100,7 @@ var CartItemsContainer = Container.template($ => ({
 	behavior: Behavior({
 		onItemAdded(container, item){
 			if(cartContents.length == 1){
-				container.skin = new Skin({fill: "#5886E4"});
+				container.skin = blueSkin;
 				container.first.string += item;
 			} else {
 				container.first.string += ", " + item; 
@@ -135,12 +135,12 @@ var TransitionContainer = Container.template($ => ({
 	],
 	behavior: Behavior({
 		onItemAdded(container, item){
-			container.run(new Fade, container.blank, new AddedItemContainer({name: "addedItem", string: "Added " + item, skin: new Skin({fill: "#5886E4"})}));
+			container.run(new Fade, container.blank, new AddedItemContainer({name: "addedItem", string: "Added " + item, skin: blueSkin}));
 			container.wait(1000);  // Runs onComplete transition after wait time	  
    		},
    	 	onComplete(container){
    	  		// Removes the message after wait time
-   	  		container.run(new Fade, container.addedItem, new AddedItemContainer({name: "blank", skin: new Skin({fill: "white"}),string: "" }));
+   	  		container.run(new Fade, container.addedItem, new AddedItemContainer({name: "blank", skin: whiteSkin, string: "" }));
    	 	},
 	})
 }))
@@ -149,8 +149,8 @@ var TransitionContainer = Container.template($ => ({
 
 /* Default screen if pin connection successful */
 var currentScreen = new Container({
-  top: 0, bottom: 0, left: 0, right: 0, name: currentScreen,
-  skin: new Skin({ fill: "white" }),
+  top: 0, bottom: 0, left: 0, right: 0, name: "currentScreen",
+  skin: whiteSkin,
   contents: [
     new ButtonContainer,
     new Picture({ height: 25, top: 90, url: readyUrl }),
@@ -161,6 +161,10 @@ var currentScreen = new Container({
   ]
 });
 
+var waitingScreen = new Container({
+	left: 0, right: 0, top: 0, bottom: 0, name: "waitingScreen", skin: blueSkin,
+	contents: [new Text({bottom: 20, vertical: "middle", height: 150, width: 150, string: "Download the A La Carte app and log in.", style: abzFont})]
+});
 
 class AppBehavior extends Behavior {
   onQuit(application) {
@@ -181,6 +185,7 @@ class AppBehavior extends Behavior {
     }, success => {
       if (success) {
         application.add(currentScreen);
+        application.add(waitingScreen);
         Pins.share("ws", {zeroconf: true, name: "pins-share-alacarte"});
       } else {
         currentScreen = new MainContainer({
