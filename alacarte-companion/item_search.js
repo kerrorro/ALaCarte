@@ -23,7 +23,7 @@ let clearButtonSkin = new Skin({ width: 101, height: 33, texture: clearImg, vari
 let searchSkin = new Skin({ width: 30, height: 30, texture: searchImg, variants: 30 });
 let whiteSkin = new Skin({ fill: "white" });
 
-let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: 'white', stroke: '#828282' });
+let searchInputSkin = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, fill: 'white', stroke: '#BCDFEB' });
 let fieldStyle = new Style({ color: '#828282', font: 'bold 24px Open Sans', horizontal: 'middle',
     vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldHintStyle = new Style({ color: "#BDBDBD", font: '20px Open Sans', horizontal: 'middle',
@@ -133,8 +133,8 @@ let EnterButton = Container.template($ => ({
 	})	
 }));
 let MyField = Container.template($ => ({ 
-	top: 5, left: 20, bottom: 5, name: "myField",
-    width: 300, height: 30, skin: nameInputSkin, contents: [
+	top: 5, left: 20, bottom: 5, name: "searchField",
+    width: 300, height: 30, skin: searchInputSkin, contents: [
         Scroller($, { 
             left: 4, right: 4, top: 4, bottom: 4, active: true, 
             Behavior: 

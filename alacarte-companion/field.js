@@ -1,10 +1,20 @@
 /* *     Copyright (C) 2010-2016 Marvell International Ltd. *     Copyright (C) 2002-2010 Kinoma, Inc. * *     Licensed under the Apache License, Version 2.0 (the "License"); *     you may not use this file except in compliance with the License. *     You may obtain a copy of the License at * *      http://www.apache.org/licenses/LICENSE-2.0 * *     Unless required by applicable law or agreed to in writing, software *     distributed under the License is distributed on an "AS IS" BASIS, *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. *     See the License for the specific language governing permissions and *     limitations under the License. */
  
 /* NOTE: this is slightly different than field.js from the Controls tutorial (http://kinoma.com/develop/documentation/kinomajs-tutorials/controls/) */
- 
+
+let nameInputSkin = new Skin({ borders: { left: 1, right: 1, top: 1, bottom: 1 }, fill: '#65779D', stroke: 'transparent' });
+let nameInputSkin2 = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, fill: '#65779D', stroke: "white" });
+let searchInputSkin = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, fill: 'white', stroke: '#BCDFEB' });
+let searchInputSkin2 = new Skin({ borders: { left: 2, right: 2, top: 2, bottom: 2 }, fill: 'white', stroke: '#5886E4' });
+
 import KEYBOARD from './keyboard';
 export class FieldLabelBehavior extends Behavior {	onCreate(label, data) {		this.data = data;	}	onDisplayed(label) {
 		this.onEdited(label);	}	onEdited(label) {	}	onFocused(label) {		label.select(0, label.length);
+		if (label.container.container.name == "searchField"){
+			label.container.container.skin = searchInputSkin2;
+		} else {
+			label.container.container.skin = nameInputSkin2;
+		}
 		KEYBOARD.show();	}
 	onKeyPressed(label, key) {
 		if(label.focused){
@@ -20,6 +30,11 @@ import KEYBOARD from './keyboard';
 	}	onReveal(label) {		label.container.reveal(label.selectionBounds);	}	onTouchBegan(label, id, x, y, ticks) {		this.position = label.position;		var offset = label.hitOffset(x - this.position.x, y - this.position.y);		if (shiftKey) {			if (offset < label.selectionOffset)				this.anchor = label.selectionOffset + label.selectionLength;			else				this.anchor = label.selectionOffset;		}		else			this.anchor = offset;		this.onTouchMoved(label, id, x, y, ticks);	}	onTouchCancelled(label, id, x, y, ticks) {	}	onTouchEnded(label, id, x, y, ticks) {		this.onTouchMoved(label, id, x, y, ticks);	}	onTouchMoved(label, id, x, y, ticks) {		this.offset = label.hitOffset(x - this.position.x, y - this.position.y);		label.select(this.offset, 0);	}	onUnfocused(label) {
 		if (label.name != "field"){
 			KEYBOARD.hide();
+		}
+		if (label.container.container.name == "searchField"){
+			label.container.container.skin = searchInputSkin;
+		} else {
+			label.container.container.skin = nameInputSkin;
 		}	}
 	onEnter(label) {
 		if(label.name != "field"){
