@@ -2,11 +2,16 @@ var TRANSITIONS = require("transitions");
 var cartPin = require("simulator/bll");
 import Pins from "pins";
 let myPins;
+var loginSuccess = false;
+var displayingWaiting = false;
 
 /*********** HANDLERS *************/
 Handler.bind("/onLogin", Behavior({
     onInvoke: function(handler, message){
-		application.remove(application.waitingScreen);
+    	loginSuccess = true;
+    	if (displayingWaiting){
+			application.remove(application.waitingScreen);
+		}
     }
 }));	
 
@@ -185,7 +190,10 @@ class AppBehavior extends Behavior {
     }, success => {
       if (success) {
         application.add(currentScreen);
-        application.add(waitingScreen);
+        if(!loginSuccess){
+        	displayingWaiting = true;
+       		application.add(waitingScreen);
+       	}
         Pins.share("ws", {zeroconf: true, name: "pins-share-alacarte"});
       } else {
         currentScreen = new MainContainer({

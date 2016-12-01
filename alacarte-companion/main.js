@@ -25,6 +25,10 @@ let itemInfo = {
   5: { name: "Milk", calories: 110, type: "Dairy", subtype: "Milk", price: 3.29 },
 }
 
+// Fake database with item locations for map search task
+let locationDB = {};
+var csv = Files.readText(mergeURI(application.url, "assets/fakeDB.csv"));
+
 /*** USER INPUT & DEVICE VARIABLES ***/
 var deviceURL = "";
 var userNum;
@@ -50,8 +54,10 @@ Handler.bind("/discover", Behavior({
     if(displayingDiscover){
     	displayingDiscover = false;
     	application.distribute("login");
+    	trace("logging in \n");
     }
     if(displayingConnectionLost){
+    	trace("connection lost \n");
     	displayingConnectionLost = false;
     	application.remove(application.connectionLost);
     }
@@ -427,6 +433,7 @@ application.behavior = Behavior({
         application.forget("alacarte-device");
     }, 
     onLaunch(application) {
+    	application.delegate("loadLocationDB");
         let discoveryInstance = Pins.discover(
             connectionDesc => {
                 if (connectionDesc.name == "pins-share-alacarte") {
@@ -467,6 +474,18 @@ application.behavior = Behavior({
 	  	
 	  	// Updates overview user interface with newly stored values
 	  	application.appContainer.distribute("onUpdate");
+    },
+    loadLocationDB(application){
+    	var csvText = csv.trim(",").split("\n");
+		for (var line of csvText.splice(1)){
+			var item = line.trim().split(",");
+			var itemName = item[0];
+			var itemArea = item[1];
+			var itemRow = item[2];
+			var itemCol = item[3];
+			var itemOffset = item[4];			
+			locationDB[itemName] = {"area": itemArea, "row": itemRow, "col": itemCol, "offset": itemOffset};
+		}	
     }
 })
 
@@ -493,6 +512,7 @@ let AppContainer = Container.template($ => ({
      		application.run(new CrossFade(), application.first, toScreen, { duration: 500 });
       		application.add(new Footer);
       	} else {
+      		trace("ondevicediscovering \n");
       		container.currentScreen.loginScreen.bottomContainer.delegate("onDeviceDiscovering");
       	}
     },
@@ -516,7 +536,7 @@ let AppContainer = Container.template($ => ({
           break;
         case "search":
           navHierarchy.unshift("6");
-          toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen });
+          toScreen = new AppContainer({ header: "Product Search", screen: new itemSearchScreen({ db: locationDB }) });
           break;
         case "checkout":
           navHierarchy.unshift("2");
@@ -566,6 +586,6 @@ let AppContainer = Container.template($ => ({
   })
 
 }))
-
-application.add(new AppContainer({ header: "", screen: new LoginScreen }));
+application.add(new AppContainer({ header: "Product Search", screen: new itemSearchScreen({ db: locationDB }) }));
+//application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 

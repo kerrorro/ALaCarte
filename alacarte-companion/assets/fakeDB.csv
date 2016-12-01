@@ -1,0 +1,147 @@
+NAME,AREA/AISLE,ROW,COL,OFFSET
+bread,bakery,15,1,0
+muffin,bakery,13,1,0
+cookie,bakery,14,1,0
+cake,bakery,15,1,0
+loaf,bakery,16,1,0
+bagel,bakery,17,1,0
+roll,bakery,18,1,0
+croissant,bakery,11,1,0
+ice cream,frozen,3,1,0
+popsicle,frozen,4,1,0
+frozen,frozen,5,1,0
+burger,frozen,6,1,0
+pizza,frozen,7,1,0
+meal,frozen,8,1,0
+burrito,frozen,9,1,0
+egg,eggs/butter,1,4,0
+butter,eggs/butter,1,6,0
+milk,dairy,1,9,0
+yogurt,dairy,1,10,0
+cheese,dairy,1,11,0
+cheddar,dairy,1,12,0
+cream,dairy,1,13,0
+feta,dairy,1,14,0
+mozzerella,dairy,1,15,0
+parmesan,dairy,1,16,0
+salmon,meat/seafood,1,17,0
+halibut,meat/seafood,1,18,0
+trout,meat/seafood,1,19,0
+shrimp,meat/seafood,1,20,0
+oyster,meat/seafood,1,21,0
+mackerel,meat/seafood,1,22,0
+fish,meat/seafood,1,23,0
+hot dog,meat/seafood,1,24,0
+tilapia,meat/seafood,1,25,0
+pork,meat/seafood,1,24,0
+beef,meat/seafood,1,23,0
+chicken,meat/seafood,1,22,0
+turkey,meat/seafood,1,21,0
+roast beef,deli,3,26,0
+slice,deli,4,26,0
+lunchmeat,deli,5,26,0
+hummus,deli,6,26,0
+tofu,deli,7,26,0
+ham,deli,8,26,0
+lemon,produce,12,26,0
+kale,produce,13,26,0
+spinach,produce,14,26,0
+broccoli,produce,15,26,0
+cauliflower,produce,16,26,0
+brussel sprout,produce,16,26,0
+leek,produce,15,26,0
+lime,produce,14,26,0
+potato,produce,13,26,0
+onion,produce,12,26,0
+garlic,produce,11,26,0
+shallot,produce,13,26,0
+apple,produce,12,26,0
+banana,produce,13,26,0
+grape,produce,14,26,0
+berry,produce,15,26,0
+berries,produce,16,26,0
+salad,produce,15,26,0
+lettuce,produce,14,26,0
+cilantro,produce,13,26,0
+turnip,produce,12,26,0
+artichoke,produce,17,21,0
+arugula,produce,17,21,0
+asparagus,produce,17,22,0
+avocado,produce,17,23,0
+bell pepper,produce,17,24,0
+beet,produce,17,25,0
+cabbage,produce,17,24,0
+chard,produce,17,23,0
+celery,produce,17,22,0
+green,produce,17,25,0
+cucumber,produce,17,21,0
+jalapeno,produce,17,25,0
+squash,produce,17,24,0
+zucchini,produce,17,21,0
+vegetable,produce,17,22,0
+produce,produce,17,23,0
+cereal,aisle 1,5,6,left
+pasta,aisle 1,6,6,right
+sauce,aisle 1,7,6,left
+tortilla,aisle 1,8,6,right
+granola,aisle 1,9,6,left
+mustard,aisle 1,10,6,right
+ketchup,aisle 1,11,6,left
+mayonaise,aisle 1,12,6,right
+hot sauce,aisle 1,5,6,left
+rice,aisle 1,6,6,right
+bean,aisle 1,12,6,left
+spice,aisle 2,11,8,right
+cinnamon,aisle 2,10,8,left
+salt,aisle 2,9,8,right
+pepper,aisle 2,8,8,left
+herb,aisle 2,7,8,right
+oil,aisle 2,6,8,left
+vinegar,aisle 2,5,8,right
+soy,aisle 2,5,8,left
+tuna,aisle 2,6,8,right
+canned,aisle 2,7,8,left
+jam,aisle 3,8,10,right
+jelly,aisle 3,9,10,left
+cracker,aisle 3,10,10,right
+crisp,aisle 3,11,10,left
+raisin,aisle 3,12,10,right
+dried,aisle 3,5,10,left
+pickle,aisle 3,6,10,right
+olive,aisle 3,12,10,left
+coffee,aisle 4,11,12,right
+tea,aisle 4,10,12,left
+cocoa,aisle 4,9,12,right
+sugar,aisle 4,8,12,left
+flour,aisle 4,7,12,right
+starch,aisle 4,6,12,left
+juice,aisle 4,5,12,right
+stevia,aisle 4,5,12,left
+yeast,aisle 4,6,12,right
+tortilla chips,aisle 5,7,14,left
+chips,aisle 5,8,14,right
+popcorn,aisle 5,9,14,left
+nut,aisle 5,10,14,right
+almond,aisle 5,11,14,left
+cashew,aisle 5,12,14,right
+peanut,aisle 5,5,14,left
+chocolate,aisle 5,6,14,right
+candy,aisle 5,12,14,left
+starburst,aisle 5,11,14,right
+gummy,aisle 5,10,14,left
+marshmallow,aisle 5,9,14,right
+pistachio,aisle 5,8,14,left
+pecan,aisle 5,7,14,right
+seed,aisle 5,6,14,left
+water,aisle 6,5,16,right
+soda,aisle 6,5,16,left
+gatorade,aisle 6,6,16,right
+sprite,aisle 6,7,16,left
+coca cola,aisle 6,8,16,right
+pepsi,aisle 6,9,16,left
+beer,aisle 7,10,18,right
+wine,aisle 7,11,18,left
+champaign,aisle 7,12,18,right
+cider,aisle 7,5,18,left
+ale,aisle 7,6,18,right
+hard,aisle 7,12,18,left

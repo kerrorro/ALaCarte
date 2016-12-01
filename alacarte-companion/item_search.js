@@ -30,14 +30,6 @@ let fieldHintStyle = new Style({ color: "#BDBDBD", font: '20px Open Sans', horiz
     vertical: 'middle', left: 0, right: 0, top: 0, bottom: 0 });
 let fieldLabelSkin = new Skin({ fill: ['transparent', 'transparent', '#C0C0C0', '#acd473'] });
 
-let locationDict = {
-	"bread": { area: "Bakery", row: 12, col: 1 },
-	"chicken": { area: "Seafood/Meat", row: 1, col: 24 },
-	"ketchup": { area: 4, row: 5, col: 12, offset: "right" },
-	"avocado": { area: "Produce", row: 11, col: 26 },
-	"pasta": { area: 6, row: 10, col: 16 , offset: "left" }
-}
-
 var userInput = []
 
 // Fade transition for the error message.
@@ -123,7 +115,7 @@ let EnterButton = Container.template($ => ({
 			if(container.variant == 1){
 				container.variant = 0;
 				container.container.container.map.distribute("drawLocation", input);
-				container.container.myField.distribute("onEnter");
+				container.container.searchField.distribute("onEnter");
 			}
 			container.focus();
 		},
@@ -181,26 +173,29 @@ let Map = Container.template($ => ({
 			container.focus();
 		},
 		drawLocation(container, input){
+			var originX = (container.width - mapSkin.width) / 2;
+			var originY = (container.height - mapSkin.height) / 2;
 			input = input.trim().toLowerCase();
 			try{
 				if (!(userInput.includes(input))){
 					userInput.push(input);
-					var top = 10 + locationDict[input].row * 12;
-					switch(locationDict[input].offset){
+					var top = originY + $.db[input].row * 12;
+					switch($.db[input].offset){
 						case "right":
-							var left = 25 + locationDict[input].col * 12;	
+							var left = originX + $.db[input].col * 12 + 5;	
 							break;
 						case "left":
-							var left = 10 + locationDict[input].col * 12;
+							var left = originX + $.db[input].col * 12 - 5;
 							break;
 						default:
-							var left = 20 + locationDict[input].col * 12;
+							var left = originX + $.db[input].col * 12;
 					}
 					// Inactive blinking previous circles
 					for(var i = 0; i < userInput.length - 1; i++) { application.distribute("inactivateCircle"); }
 					container.add(new LocationCircle({ name: input, top: top, left: left}));
+
 					// Update the list
-					container.container.scroller.itemList.delegate("updateList", { item: input, area : locationDict[input].area });
+					container.container.scroller.itemList.delegate("updateList", { item: input, area : $.db[input].area });
 				}
 			} catch (err){
 				trace("ERROR: " + err + "\n");
@@ -293,7 +288,7 @@ export var itemSearchScreen = Container.template($ => ({    name: "search", lef
       					TopScrollerShadow(),
       					BottomScrollerShadow()] }),
    	  new Container({ name: "feedbackCont", left: 0, right: 0, top: 0, height: 50, contents: new FeedbackLine({ skin: whiteSkin })}),
-      new Map,
+      new Map($),
       new InputLine,
       new BottomContainer   ],
    behavior: Behavior({
