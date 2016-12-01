@@ -586,6 +586,6 @@ let AppContainer = Container.template($ => ({
   })
 
 }))
-application.add(new AppContainer({ header: "Product Search", screen: new itemSearchScreen({ db: locationDB }) }));
-//application.add(new AppContainer({ header: "", screen: new LoginScreen }));
+
+application.add(new AppContainer({ header: "", screen: new LoginScreen }));
 
