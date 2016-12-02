@@ -262,7 +262,8 @@ let LoginScreen = Column.template($ => ({
 			container.focus();
 		}
 	})
-}));
+}));
+
 let ConnectionLostScreen = Container.template($ => ({
 	left: 0, right: 0, top: 0, bottom: 0, skin: headerSkin, name: "connectionLost",
 	contents: [ new Picture({width: 307, height: 434, aspect: "fit", url: "assets/connectionLost.png" })]
@@ -270,7 +271,8 @@ let ConnectionLostScreen = Container.template($ => ({
 
 /****** OVERVIEW SCREEN COMPONENTS ******/
 let priceDetailsCanvas = Canvas.template($ => ({
-	left: 0, right: 0, top: 10, bottom: 0,	behavior: Behavior({
+	left: 0, right: 0, top: 10, bottom: 0,
+	behavior: Behavior({
 		onCreate(canvas){
     		this.percentage = $.percentage;
   		},
@@ -451,10 +453,10 @@ application.behavior = Behavior({
         );
     },
     onListening(application){
-    	remotePins.repeat("/cartData/read", 1000, result => {	
+    	remotePins.repeat("/cartData/read", 1000, result => {
     		if ("[" + cartContents.join() + "]" != result){
     			cartContents = JSON.parse(result);
-    			application.delegate("onUpdate");	
+    			this.onUpdate(application)
     		}
 		});
     },
@@ -462,30 +464,32 @@ application.behavior = Behavior({
     	trace("Updating app values \n");
     	// Update stored calorie values
     	var itemCalories = itemInfo[cartContents[cartContents.length - 1]].calories;
-	 	totalCalories += itemCalories;
-	  	trace("TOTAL CALORIES: " + totalCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
-		averageCalories = totalCalories*1.0/cartContents.length;
-		
-		// Update stored price values
-    	var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
-	 	subtotalPrice += itemPrice;
-	  	totalPrice = subtotalPrice * (1 + tax);
-	  	trace("TOTAL PRICE: " + totalPrice + "\n\n");
-	  	
+  	 	totalCalories += itemCalories;
+  		averageCalories = totalCalories*1.0/cartContents.length;
+      trace("TOTAL CALORIES: " + totalCalories + " ||  AVERAGE CALORIES: " + averageCalories + "\n");
+
+
+  		// Update stored price values
+      var itemPrice = itemInfo[cartContents[cartContents.length - 1]].price;
+  	 	subtotalPrice += itemPrice;
+  	  totalPrice = subtotalPrice * (1 + tax);
+  	  trace("TOTAL PRICE: " + totalPrice + "\n\n");
+
 	  	// Updates overview user interface with newly stored values
 	  	application.appContainer.distribute("onUpdate");
+      application.appContainer.behavior.onUpdateCart(application.appContainer);
     },
     loadLocationDB(application){
     	var csvText = csv.trim(",").split("\n");
-		for (var line of csvText.splice(1)){
-			var item = line.trim().split(",");
-			var itemName = item[0];
-			var itemArea = item[1];
-			var itemRow = item[2];
-			var itemCol = item[3];
-			var itemOffset = item[4];			
-			locationDB[itemName] = {"area": itemArea, "row": itemRow, "col": itemCol, "offset": itemOffset};
-		}	
+  		for (var line of csvText.splice(1)){
+  			var item = line.trim().split(",");
+  			var itemName = item[0];
+  			var itemArea = item[1];
+  			var itemRow = item[2];
+  			var itemCol = item[3];
+  			var itemOffset = item[4];
+  			locationDB[itemName] = {"area": itemArea, "row": itemRow, "col": itemCol, "offset": itemOffset};
+  		}
     }
 })
 
@@ -500,8 +504,8 @@ let AppContainer = Container.template($ => ({
   left: 0, right: 0, top: 0, bottom: 0, name: "appContainer",
   skin: whiteSkin, active: true,
   contents: [
-    new CurrentScreen({ screen: $.screen }), 
-    new Header({ string: $.header }), 
+    new CurrentScreen({ screen: $.screen }),
+    new Header({ string: $.header }),
 
   ],
   behavior: Behavior({
@@ -546,7 +550,7 @@ let AppContainer = Container.template($ => ({
           navHierarchy.unshift("1");
           toScreen = new AppContainer({ header: "A La Carte", screen: new OverviewScreen });
       }
-  
+
       // Runs transition on AppContainer (which contains Header and CurrentScreen)
       var prevScreenNum = navHierarchy.pop();
       var currentScreenNum = navHierarchy[0];
@@ -555,11 +559,12 @@ let AppContainer = Container.template($ => ({
       currentScreenNum > prevScreenNum ? pushDirection = "left" : pushDirection = "right";
       container.run(new Push(), container.first, toScreen, { duration: 500, direction: pushDirection });
     },
-    onUpdate: function(container){
+    onUpdateCart: function(container) {
     	// Crossfade update new cart info on breakdown pages
+      trace("App container onUpdate Called\n");
     	if (navHierarchy[0] == "2" || navHierarchy[0] == "3" || navHierarchy[0] == "4" || navHierarchy[0] == "5"){
     		let toScreen;
-    		switch (navHierarchy[0]){
+    		switch (navHierarchy[0]) {
     			case "2": 	// Checkout
     				toScreen = new AppContainer({ header: "Checkout", screen: new CheckoutScreen });
     				break;
@@ -569,15 +574,47 @@ let AppContainer = Container.template($ => ({
     			case "4":	// Nutrition
     				toScreen = new AppContainer({ header: "Calorie Breakdown", screen: new calorieScreen({itemInfo: itemInfo, cartData: cartContents}) });
     				break;
-    				
     			case "5":	// Nutrition Details
     				// Only update screen if already on the same type screen
-    				var addedItemType = itemInfo[cartContents[cartContents.length - 1]].type;
-    				if (addedItemType == nutritionDetailType){
-    					toScreen = new AppContainer({ header: nutritionDetailType + " Breakdown", screen: new calorieDetailsScreen({itemInfo: itemInfo, cartData: cartContents, type: nutritionDetailType, percentage: nutritionDetailPercent})});
-    				}
+            // Loop through all cart data items and find total calories
+            // Loop through all cart data items and find total calories and
+
+            // total calories for each food group
+            var items = cartContents;
+            var totalCal = 0;
+            var calories = {"Produce": 0, "Sweets": 0, "Grains": 0, "Meats": 0, "Dairy": 0}
+            for (var item of items) {
+              var info = itemInfo[item];
+              totalCal += info.calories
+              calories[info.type] += info.calories
+            }
+
+            // Set percentage for each food group
+            let percent;
+            if (cartContents.length != 0) {
+              switch (nutritionDetailType) {
+                case "Sweets":
+                  percent = Math.round((calories["Sweets"] / totalCal) * 100);
+                  break;
+                case "Produce":
+                  percent = Math.round((calories["Produce"] / totalCal) * 100);
+                  break;
+                case "Dairy":
+                  percent = Math.round((calories["Dairy"] / totalCal) * 100);
+                  break;
+                case "Meats":
+                  percent = Math.round((calories["Meats"] / totalCal) * 100);
+                  break;
+                case "Grains":
+                  percent = Math.round((calories["Grains"] / totalCal) * 100);
+                  break;
+              }
+            }
+
+    				toScreen = new AppContainer({ header: nutritionDetailType + " Breakdown", screen: new calorieDetailsScreen({itemInfo: itemInfo, cartData: cartContents, type: nutritionDetailType, percentage: percent})});
     				break;
     		}
+
     		if (toScreen != undefined){
     			container.run(new CrossFade(), container.first, toScreen, { duration: 500 });
     		}

@@ -112,7 +112,6 @@ let FoodGroupInfo = Column.template($ => {
     behavior: Behavior({
       percentage: $.percentage,
       onTouchEnded(categoryLine) {
-        trace(categoryLine.name + " Category Selected\n");
         application.first.delegate("transitionToScreen", {to: "nutritionDetails", type: categoryLine.name, percentage: this.percentage});
       }
     })
@@ -185,11 +184,13 @@ export var calorieScreen = Column.template($ => {
 
   // Set percentage for each food group
   if ($.cartData.length != 0){
-	sweetsPercent = Math.round((calories["Sweets"] / totalCal) * 100);
-	producePercent = Math.round((calories["Produce"] / totalCal) * 100);
-	dairyPercent = Math.round((calories["Dairy"] / totalCal) * 100);	meatsPercent = Math.round((calories["Meats"] / totalCal) * 100);
-	grainsPercent = Math.round((calories["Grains"] / totalCal) * 100);
+  	sweetsPercent = Math.round((calories["Sweets"] / totalCal) * 100);
+  	producePercent = Math.round((calories["Produce"] / totalCal) * 100);
+  	dairyPercent = Math.round((calories["Dairy"] / totalCal) * 100);
+  	meatsPercent = Math.round((calories["Meats"] / totalCal) * 100);
+  	grainsPercent = Math.round((calories["Grains"] / totalCal) * 100);
   }
+
   return ({
      left: 0, right: 0, top: 0, bottom: 0, name: "calorieScreen", skin: new Skin({fill: "#fcfcfd"}),
      contents: [
@@ -209,11 +210,12 @@ let calorieDetailsCanvas = Canvas.template($ => ({
   left: 0, right: 0, top: 0, bottom: 0,
   behavior: Behavior({
     percentage: $.percentage,
-    onDisplaying(canvas) {
+    onDisplaying(canvas) {  
       let yellow = "#FFC273";
       let gray = "#e0e0e0"
       let total = (this.percentage / 100) * 2*Math.PI;
       let ctx = canvas.getContext("2d");
+      trace(ctx + "\n");
       ctx.lineWidth = 8;
 
       if ($.percentage >= 25) {
@@ -249,8 +251,6 @@ let calorieDetailsCanvas = Canvas.template($ => ({
         ctx.arc(188, 75, 55, total + (1.5708 * 3), 2*Math.PI);
         ctx.stroke();
       }
-
-
     }
   })
 }));
