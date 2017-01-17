@@ -2,7 +2,9 @@
 
 A companion app for a connected shopping cart made for CS160: User Interface Design and Development.
 
-**Video Demo:**  https://youtu.be/qedWJtrsyt8
+**Promotional Video:**  https://youtu.be/qedWJtrsyt8
+
+**App Walkthrough:**  https://youtu.be/tQhb9A4_gpU
 
 **Medium Post:** https://medium.com/@lgilbert/a-la-carte-cs-160-fall-2016-project-ad457f53983f#.pxfsqe6u4
 
