@@ -1,6 +1,6 @@
 # A La Carte   <img src="https://cdn-images-1.medium.com/max/800/1*5sAFf4glC-ro1sQEJZdxWQ.png" height="40">
 
-A companion app for a connected shopping cart made for CS160: User Interface Design and Development.
+A La Carte is a companion app for a connected shopping cart that tracks price and nutritional data for the items placed in it. It seeks to provide its users with an integrated shopping solution to make the shopping process more informative, less hectic, and less tedious. It was made using KinomaJS for CS160: User Interface Design and Development at UC Berkeley.
 
 **Promotional Video:**  https://youtu.be/qedWJtrsyt8
 
